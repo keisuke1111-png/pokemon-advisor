@@ -12,7 +12,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from pokemon_data import POKEMON_DB
-＃from streamlit_gsheets_connection import GSheetsConnection
+# from streamlit_gsheets_connection import GSheetsConnection
 
 
 st.set_page_config(page_title="ポケモン構築サポーター", layout="wide", initial_sidebar_state="collapsed")
