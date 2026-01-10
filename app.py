@@ -1,5 +1,5 @@
 # VSCodeターミナルで実行:
-# pip install streamlit pandas
+# pip install streamlit pandas plotly
 # streamlit run app.py
 
 import json
@@ -19,33 +19,103 @@ st.set_page_config(page_title="ポケモン構築サポーター", layout="wide"
 st.markdown(
     """
 <style>
-body { background: #0f1117; color: #e5e7eb; }
+:root {
+  --bg: #0b0f1a;
+  --panel: rgba(11, 18, 32, 0.72);
+  --panel-border: rgba(0, 212, 255, 0.18);
+  --accent: #00d4ff;
+  --text: #e6f1ff;
+  --muted: #94a3b8;
+}
+
+body { background: var(--bg); color: var(--text); }
 .main { padding-top: 0.5rem; }
-section[data-testid="stSidebar"] { background: #0b0d12; }
+section[data-testid="stSidebar"] { background: #0a0e17; }
+
+h1, h2, h3, h4, h5 { color: var(--text); }
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  margin: 0.75rem 0;
+}
+
+.card {
+  position: relative;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  margin-bottom: 0.9rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 212, 255, 0.16);
+  border-color: rgba(0, 212, 255, 0.5);
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.card-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.card-image {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+}
+
+.type-watermark {
+  position: absolute;
+  right: 12px;
+  bottom: 6px;
+  font-size: 3rem;
+  opacity: 0.06;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  color: #0b0f1a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-right: 0.25rem;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.12);
+}
 
 div[data-testid="stSelectbox"] > div, div[data-testid="stMultiSelect"] > div {
   font-size: 1.05rem;
 }
+
 div.stButton > button {
-  font-size: 1.1rem;
-  padding: 0.7rem 1.1rem;
-}
-.badge {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  background: #111827;
-  color: #f9fafb;
-  font-size: 0.8rem;
-  margin-right: 0.25rem;
-}
-.card {
-  padding: 0.85rem 1rem;
-  border-radius: 14px;
-  background: #1b1f2a;
-  box-shadow: 0 6px 18px rgba(15, 17, 23, 0.5);
-  margin-bottom: 0.75rem;
-  border: 1px solid #2a3142;
+  font-size: 1.05rem;
+  padding: 0.75rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  background: linear-gradient(180deg, rgba(0, 212, 255, 0.18), rgba(0, 212, 255, 0.06));
+  color: var(--text);
 }
 </style>
 """,
@@ -95,24 +165,45 @@ TYPE_CHART = {
 }
 
 TYPE_COLORS = {
-    "ノーマル": "#9FA19F",
-    "ほのお": "#E76A3B",
-    "みず": "#4D90D5",
-    "でんき": "#F6C747",
-    "くさ": "#62B957",
-    "こおり": "#74CEC0",
-    "かくとう": "#D3425F",
-    "どく": "#B763CF",
-    "じめん": "#D89454",
-    "ひこう": "#748FC9",
-    "エスパー": "#F65F6A",
-    "むし": "#92BC2C",
-    "いわ": "#C9BB8A",
-    "ゴースト": "#5F6DBC",
-    "ドラゴン": "#0C69C8",
-    "あく": "#595761",
-    "はがね": "#5695A3",
-    "フェアリー": "#EE90E6",
+    "ノーマル": "#d1d5db",
+    "ほのお": "#ff6b4a",
+    "みず": "#3aa5ff",
+    "でんき": "#ffd13b",
+    "くさ": "#4ee08f",
+    "こおり": "#6ae6ff",
+    "かくとう": "#ff4d6d",
+    "どく": "#c084fc",
+    "じめん": "#ffb86b",
+    "ひこう": "#7aa2ff",
+    "エスパー": "#ff7ab6",
+    "むし": "#a5e635",
+    "いわ": "#e0c087",
+    "ゴースト": "#7c6cff",
+    "ドラゴン": "#3d7bff",
+    "あく": "#8b8f9b",
+    "はがね": "#7fd1d9",
+    "フェアリー": "#ff9de2",
+}
+
+TYPE_EMOJI = {
+    "ノーマル": "⚪",
+    "ほのお": "🔥",
+    "みず": "💧",
+    "でんき": "⚡",
+    "くさ": "🌿",
+    "こおり": "❄️",
+    "かくとう": "🥊",
+    "どく": "☠️",
+    "じめん": "🌎",
+    "ひこう": "🪽",
+    "エスパー": "🔮",
+    "むし": "🐛",
+    "いわ": "🪨",
+    "ゴースト": "👻",
+    "ドラゴン": "🐉",
+    "あく": "🌑",
+    "はがね": "⚙️",
+    "フェアリー": "✨",
 }
 
 META_THREATS = {
@@ -374,7 +465,10 @@ def has_resist(team: list[str], attack_type: str) -> bool:
 
 def render_type_badges(types: list[str]) -> str:
     return "".join(
-        [f'<span class="badge" style="background:{TYPE_COLORS.get(t, "#111827")}">{t}</span>' for t in types]
+        [
+            f'<span class="badge" style="background:{TYPE_COLORS.get(t, "#00d4ff")}">{t}</span>'
+            for t in types
+        ]
     )
 
 
@@ -388,6 +482,20 @@ def recommended_tera(info: dict) -> list[str]:
     if weakness_types:
         return weakness_types[:2]
     return get_types(info)
+
+
+def get_image_url(info: dict) -> str:
+    if info.get("image_url"):
+        return info["image_url"]
+    if info.get("sprite_url"):
+        return info["sprite_url"]
+    dex_id = info.get("dex_id") or info.get("id")
+    if dex_id:
+        return (
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"
+            f"{dex_id}.png"
+        )
+    return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
 
 
 def build_speed_table(team: list[str], nature: str | None) -> pd.DataFrame:
@@ -650,7 +758,7 @@ def build_synergy_network(team: list[str]) -> go.Figure:
             x=edge_x,
             y=edge_y,
             mode="lines",
-            line=dict(color="#6b7280", width=2),
+            line=dict(color="#1f2937", width=2),
             hoverinfo="none",
         )
     )
@@ -661,7 +769,7 @@ def build_synergy_network(team: list[str]) -> go.Figure:
             mode="markers+text",
             text=node_text,
             textposition="bottom center",
-            marker=dict(size=18, color="#93c5fd", line=dict(width=1, color="#111827")),
+            marker=dict(size=20, color="#00d4ff", line=dict(width=1, color="#0b0f1a")),
             hoverinfo="text",
         )
     )
@@ -671,6 +779,26 @@ def build_synergy_network(team: list[str]) -> go.Figure:
         margin=dict(l=10, r=10, t=10, b=10),
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
+    )
+    return fig
+
+
+def table_to_plotly(df: pd.DataFrame, title: str) -> go.Figure:
+    header_color = "#0b1220"
+    cells_color = "#111827"
+    fig = go.Figure(
+        data=[
+            go.Table(
+                header=dict(values=list(df.columns), fill_color=header_color, font=dict(color="#e5e7eb")),
+                cells=dict(values=[df[col].tolist() for col in df.columns], fill_color=cells_color, font=dict(color="#e5e7eb")),
+            )
+        ]
+    )
+    fig.update_layout(
+        template="plotly_dark",
+        height=360,
+        margin=dict(l=10, r=10, t=20, b=10),
+        title=title,
     )
     return fig
 
@@ -779,20 +907,35 @@ with tabs[0]:
         st.info("まずは軸ポケモンを1体選んでください。")
     else:
         st.write(f"現在のメンバー数: {len(team)} / 6")
-        for name in team:
+        cols = st.columns(2)
+        for idx, name in enumerate(team):
             info = POKEMON_DB[name]
             badges = render_type_badges(get_types(info))
-            extra_badge = " <span class='badge' style='background:#f59e0b;'>NEW</span>" if has_new_mechanic(info) else ""
-            st.markdown(
-                f'<div class="card"><strong>{name}</strong> {badges}{extra_badge}<br>'
-                f'役割: {", ".join(info["role_labels"])} | 特性: {", ".join(info["abilities"])}<br>'
-                f'推奨性格: {info["recommended_nature"]} | 推奨持ち物: {", ".join(info["recommended_items"])}<br>'
-                f'推奨技: {", ".join(get_all_moves(info))}<br>'
-                f'推奨テラスタイプ: {", ".join(recommended_tera(info))}<br>'
-                f'{offense_hint(info)}'
-                f"</div>",
-                unsafe_allow_html=True,
+            extra_badge = " <span class='badge' style='background:#00d4ff;'>NEW</span>" if has_new_mechanic(info) else ""
+            watermark = TYPE_EMOJI.get(get_types(info)[0], "")
+            image_url = get_image_url(info)
+            card_html = (
+                f'<div class="card">'
+                f'<div class="type-watermark">{watermark}</div>'
+                f'<div style="display:flex; gap:0.8rem; align-items:center;">'
+                f'  <div class="card-image"><img src="{image_url}" alt="{name}"/></div>'
+                f'  <div>'
+                f'    <div class="card-title">{name} {extra_badge}</div>'
+                f'    <div>{badges}</div>'
+                f'    <div class="card-meta">役割: {", ".join(info["role_labels"])}</div>'
+                f'    <div class="card-meta">特性: {", ".join(info["abilities"])}</div>'
+                f'    <div class="card-meta">性格: {info["recommended_nature"]}</div>'
+                f'  </div>'
+                f'</div>'
+                f'<div class="divider"></div>'
+                f'<div class="card-meta">持ち物: {", ".join(info["recommended_items"])}</div>'
+                f'<div class="card-meta">技: {", ".join(get_all_moves(info))}</div>'
+                f'<div class="card-meta">テラ: {", ".join(recommended_tera(info))}</div>'
+                f'<div class="card-meta">{offense_hint(info)}</div>'
+                f'</div>'
             )
+            with cols[idx % 2]:
+                st.markdown(card_html, unsafe_allow_html=True)
 
         st.subheader("戦術プラン")
         plans = build_tactical_plans(team)
@@ -828,43 +971,10 @@ with tabs[1]:
     if not team:
         st.info("メンバーを選択すると相性表が表示されます。")
     else:
-        st.write("防御相性: 4倍弱点や一貫は赤色で警告。")
         def_table = calc_defensive_table(team)
-
-        def color_def(val, col):
-            if col == "4倍弱点" and isinstance(val, int) and val > 0:
-                return "background-color: #b91c1c"
-            if col == "一貫" and val == "あり":
-                return "background-color: #b91c1c"
-            if col == "弱点" and isinstance(val, int) and val >= 3:
-                return "background-color: #f87171"
-            if col == "攻撃タイプ" and isinstance(val, str):
-                return f"background-color: {TYPE_COLORS.get(val, '#111827')}; color: #111827;"
-            if col in ("耐性", "無効") and isinstance(val, int) and val >= 2:
-                return "background-color: #16a34a"
-            return ""
-
-        def_table_style = def_table.style.apply(
-            lambda row: [color_def(v, c) for v, c in zip(row, def_table.columns)], axis=1
-        )
-        st.dataframe(def_table_style, use_container_width=True, height=460)
-
-        st.write("攻撃相性: 有利打点が少ないタイプは注意。")
         off_table = calc_offensive_table(team)
-
-        def color_off(val):
-            if isinstance(val, int):
-                if val >= 3:
-                    return "background-color: #16a34a"
-                if val == 0:
-                    return "background-color: #f59e0b"
-            return ""
-
-        off_table_style = off_table.style.apply(
-            lambda row: [color_off(v) for v in row], axis=1
-        )
-        st.dataframe(off_table_style, use_container_width=True, height=460)
-
+        st.plotly_chart(table_to_plotly(def_table, "防御相性"), use_container_width=True)
+        st.plotly_chart(table_to_plotly(off_table, "攻撃相性"), use_container_width=True)
         st.subheader("相性ネットワーク")
         st.plotly_chart(build_synergy_network(team), use_container_width=True)
 
@@ -905,8 +1015,7 @@ with tabs[3]:
         st.info("メンバーを選択するとSラインが表示されます。")
     else:
         speed_table = build_speed_table(team, speed_nature)
-        st.dataframe(speed_table, use_container_width=True, height=240)
-        st.write("最速ライン目安（指定式の最大実数）")
+        st.plotly_chart(table_to_plotly(speed_table, "Sライン"), use_container_width=True)
         speed_checks = speed_target_check(team, speed_nature)
         for target, data in speed_checks.items():
             st.write(f"- {target} (目安 {data['target']}): {'抜ける' if data['ok'] else '抜けない'}")
@@ -917,9 +1026,7 @@ with tabs[3]:
         st.download_button("テキストをダウンロード", export_text, file_name="pokemon_team.txt")
 
         st.subheader("構築メモ")
-        st.write(
-            "弱点が重なるタイプは要注意。コンセプトに合わせて役割を補完すると構築が安定します。"
-        )
+        st.write("弱点が重なるタイプは要注意。コンセプトに合わせて役割を補完すると構築が安定します。")
 
 with tabs[4]:
     st.subheader("戦績ログ")
