@@ -243,10 +243,6 @@ def recommended_tera(info: dict) -> list[str]:
 
 
 def get_image_url(info: dict) -> str:
-    if info.get("image_url"):
-        return info["image_url"]
-    if info.get("sprite_url"):
-        return info["sprite_url"]
     dex_id = info.get("dex_id") or info.get("id")
     if dex_id:
         try:
@@ -258,6 +254,10 @@ def get_image_url(info: dict) -> str:
             "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"
             f"{dex_id}.png"
         )
+    if info.get("image_url"):
+        return info["image_url"]
+    if info.get("sprite_url"):
+        return info["sprite_url"]
     return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
 
 
@@ -284,6 +284,54 @@ def get_type_css_class(info: dict) -> str:
     }
     primary = get_types(info)[0]
     return type_map.get(primary, "card-normal")
+
+
+def meta_threat_levels(team: list[str], db: dict) -> list[dict]:
+    results = []
+    for name, types in META_TOP_POKEMON.items():
+        weak = 0
+        resist = 0
+        immune = 0
+        for p in team:
+            mults = [type_multiplier(t, get_types(db[p])) for t in types]
+            if any(m == 0 for m in mults):
+                immune += 1
+            elif any(m >= 2 for m in mults):
+                weak += 1
+            elif all(m <= 0.5 for m in mults):
+                resist += 1
+        threat = max(0, weak - resist - (1 if immune else 0))
+        results.append(
+            {
+                "name": name,
+                "weak": weak,
+                "resist": resist,
+                "immune": immune,
+                "score": threat,
+                "level": "high" if threat >= 2 else "mid" if threat == 1 else "low",
+            }
+        )
+    return results
+
+
+def build_speed_cards(team: list[str], db: dict, nature: str | None) -> list[dict]:
+    cards = []
+    max_speed = max((calc_stat_max(db[p]["stats"]["S"], nature, "S") for p in team), default=0)
+    for p in team:
+        s_base = db[p]["stats"]["S"]
+        s_actual = calc_stat_max(s_base, nature, "S")
+        ratio = 0 if max_speed == 0 else s_actual / max_speed
+        cards.append(
+            {
+                "name": p,
+                "type": " / ".join(get_types(db[p])),
+                "base": s_base,
+                "actual": s_actual,
+                "ratio": ratio,
+                "is_fastest": s_actual == max_speed and max_speed > 0,
+            }
+        )
+    return sorted(cards, key=lambda x: x["actual"], reverse=True)
 
 
 def default_team_slot() -> dict:

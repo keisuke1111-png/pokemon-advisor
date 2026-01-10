@@ -270,6 +270,247 @@ div[data-testid="stTabs"] button[aria-selected="true"] {
   box-shadow: var(--shadow);
 }
 
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+  margin-top: 0.6rem;
+}
+
+.threat-card {
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--panel-border);
+  background: #FFFFFF;
+  box-shadow: var(--shadow);
+}
+
+.threat-title {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.threat-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0.2rem 0 0.6rem;
+}
+
+.threat-gauge {
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.threat-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.threat-foot {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-top: 0.6rem;
+}
+
+.level-low .threat-fill { background: linear-gradient(90deg, #22C55E, #86EFAC); }
+.level-mid .threat-fill { background: linear-gradient(90deg, #F59E0B, #FCD34D); }
+.level-high .threat-fill { background: linear-gradient(90deg, #EF4444, #FCA5A5); }
+
+.alert-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.8rem 0;
+}
+
+.alert-chip {
+  background: #FEF3C7;
+  color: #92400E;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-warn {
+  background: #F59E0B;
+  color: #FFFFFF;
+}
+
+.badge-alert {
+  background: #EF4444;
+  color: #FFFFFF;
+}
+
+.panel-title {
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.panel-line {
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.alert-banner {
+  margin-top: 0.9rem;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+  padding: 0.8rem 1rem;
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+.speed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.9rem;
+  margin-top: 0.6rem;
+}
+
+.speed-card {
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--panel-border);
+  background: #FFFFFF;
+  box-shadow: var(--shadow);
+}
+
+.speed-title {
+  font-weight: 700;
+  font-size: 0.98rem;
+}
+
+.speed-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0.2rem 0 0.6rem;
+}
+
+.speed-track {
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.speed-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3B82F6, #93C5FD);
+}
+
+.speed-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: #DBEAFE;
+  color: #1D4ED8;
+  font-weight: 700;
+}
+
+.timeline {
+  margin-top: 1rem;
+  padding: 0.4rem 0.2rem;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 0.35rem;
+  background: #94A3B8;
+}
+
+.timeline-item.ok .timeline-dot { background: #22C55E; }
+.timeline-item.ng .timeline-dot { background: #EF4444; }
+
+.timeline-title {
+  font-weight: 700;
+}
+
+.timeline-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.risk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+  margin-top: 0.6rem;
+}
+
+.risk-card {
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--panel-border);
+  background: #FFFFFF;
+  box-shadow: var(--shadow);
+}
+
+.risk-title {
+  font-weight: 700;
+}
+
+.risk-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0.2rem 0 0.6rem;
+}
+
+.risk-track {
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.risk-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #EF4444, #FCA5A5);
+}
+
+.speed-rank-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.9rem;
+  margin-top: 0.6rem;
+}
+
+.speed-rank-card {
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--panel-border);
+  background: #FFFFFF;
+  box-shadow: var(--shadow);
+}
+
+.speed-rank-title {
+  font-weight: 700;
+}
+
+.speed-rank-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0.2rem 0 0.6rem;
+}
+
 @keyframes heroShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }

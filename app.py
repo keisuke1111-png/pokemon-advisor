@@ -23,7 +23,6 @@ from logic import (
     battle_log_summary,
     build_personal_warning,
     build_speed_ranking,
-    build_speed_table,
     build_synergy_network,
     build_tactical_plans,
     calc_defensive_table,
@@ -38,6 +37,7 @@ from logic import (
     get_types,
     has_new_mechanic,
     meta_pressure,
+    meta_threat_levels,
     meta_warnings,
     offense_hint,
     load_json_list,
@@ -47,6 +47,7 @@ from logic import (
     render_type_badges,
     save_json_list,
     speed_target_check,
+    build_speed_cards,
     suggest_complements,
     table_to_plotly,
     team_role_balance,
@@ -193,7 +194,6 @@ with tabs[0]:
                 info = POKEMON_DB[selected_pokemon]
                 st.image(get_image_url(info), width=96)
                 st.caption(f"タイプ: {', '.join(get_types(info))}")
-                st.text_input("ニックネーム", key=f"slot_{idx}_nickname", placeholder=selected_pokemon)
                 st.text_input(
                     "持ち物",
                     key=f"slot_{idx}_item",
@@ -205,11 +205,6 @@ with tabs[0]:
                     tera_options = ["未設定", current_tera] + TYPES
                 tera_index = tera_options.index(current_tera) if current_tera in tera_options else 0
                 st.selectbox("テラスタイプ", tera_options, index=tera_index, key=f"slot_{idx}_tera")
-                st.text_input(
-                    "役割",
-                    key=f"slot_{idx}_role",
-                    placeholder=", ".join(info.get("role_labels", [])),
-                )
 
     team = [slot["pokemon"] for slot in st.session_state.team_slots if slot["pokemon"] != NO_SELECTION]
     if not team:
@@ -226,14 +221,13 @@ with tabs[0]:
             extra_badge = " <span class='badge' style='background:#3B82F6;'>NEW</span>" if has_new_mechanic(info) else ""
             watermark = TYPE_EMOJI.get(get_types(info)[0], "")
             image_url = get_image_url(info)
-            nickname = slot["nickname"].strip()
             item = slot["item"].strip() or (info["recommended_items"][0] if info["recommended_items"] else "未設定")
             tera = slot["tera"].strip() or (recommended_tera(info)[0] if recommended_tera(info) else "未設定")
-            role = slot["role"].strip() or ", ".join(info["role_labels"])
+            role = ", ".join(info["role_labels"])
             moves = get_all_moves(info)
             stats = info["stats"]
             speed_actual = calc_stat_max(stats["S"], speed_nature, "S")
-            card_title = f"{nickname} ({name})" if nickname else name
+            card_title = name
             type_class = get_type_css_class(info)
             stat_rows = "".join(
                 [
@@ -333,51 +327,119 @@ with tabs[2]:
     if not team:
         st.info("メンバーを選択するとメタ対策が表示されます。")
     else:
-        st.write("環境上位への対策状況を自動チェックします。")
+        st.write("環境上位への対策状況をダッシュボードで可視化します。")
+        threat_rows = meta_threat_levels(team, POKEMON_DB)
+        panels = []
+        for row in threat_rows:
+            counters = counter_candidates(team, META_TOP_POKEMON[row["name"]], POKEMON_DB)
+            counter_text = ", ".join(counters[:3]) if counters else "不足"
+            panels.append(
+                f"""
+<div class="threat-card {row["level"]}">
+  <div class="threat-title">{row["name"]}</div>
+  <div class="threat-meta">弱点: {row["weak"]} / 耐性: {row["resist"]} / 無効: {row["immune"]}</div>
+  <div class="threat-gauge">
+    <div class="threat-fill level-{row["level"]}" style="width:{min(100, row["score"] * 40 + 10)}%;"></div>
+  </div>
+  <div class="threat-foot">対策候補: {counter_text}</div>
+</div>
+"""
+            )
+        st.markdown('<div class="analysis-grid">' + "".join(panels) + "</div>", unsafe_allow_html=True)
+
         warnings = meta_pressure(team, POKEMON_DB)
         if warnings:
-            for w in warnings:
-                st.error(w)
-        else:
-            st.success("一貫するメタ対象は検出されませんでした。")
+            alert_items = "".join([f"<div class='alert-chip'>{w}</div>" for w in warnings])
+            st.markdown(f"<div class='alert-row'>{alert_items}</div>", unsafe_allow_html=True)
 
         missing_coverage, combo_alerts = meta_warnings(team, POKEMON_DB)
-        if missing_coverage:
-            st.warning(f"上位ポケモンへの打点不足: {', '.join(missing_coverage)}")
-        else:
-            st.success("上位ポケモンへの打点は概ね確保されています。")
-        if combo_alerts:
-            st.error(f"対策必須の並び: {', '.join(combo_alerts)}")
+        if missing_coverage or combo_alerts:
+            missing_html = ""
+            if missing_coverage:
+                missing_html = "".join([f"<span class='badge badge-warn'>{n}</span>" for n in missing_coverage])
+            combo_html = ""
+            if combo_alerts:
+                combo_html = "".join([f"<span class='badge badge-alert'>{n}</span>" for n in combo_alerts])
+            st.markdown(
+                f"""
+<div class="analysis-panel">
+  <div class="panel-title">要注意シグナル</div>
+  <div class="panel-line">打点不足: {missing_html or "なし"}</div>
+  <div class="panel-line">危険コンボ: {combo_html or "なし"}</div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
 
         personal_warning = build_personal_warning(st.session_state.battle_logs, team, POKEMON_DB)
         if personal_warning:
-            st.warning(personal_warning)
-
-        st.subheader("対策候補")
-        for name, types in META_TOP_POKEMON.items():
-            counters = counter_candidates(team, types, POKEMON_DB)
-            if counters:
-                st.write(f"{name} 対策候補: {', '.join(counters)}")
+            st.markdown(f"<div class='alert-banner'>{personal_warning}</div>", unsafe_allow_html=True)
 
 with tabs[3]:
     st.subheader("Sライン")
     if not team:
         st.info("メンバーを選択するとSラインが表示されます。")
     else:
-        speed_table = build_speed_table(team, POKEMON_DB, speed_nature)
-        st.plotly_chart(table_to_plotly(speed_table, "Sライン"), use_container_width=True)
+        st.write("パーティ内Sラインをビジュアルで確認できます。")
+        speed_cards = build_speed_cards(team, POKEMON_DB, speed_nature)
+        speed_items = []
+        for card in speed_cards:
+            badge = "<span class='speed-badge'>最速</span>" if card["is_fastest"] else ""
+            speed_items.append(
+                f"""
+<div class="speed-card">
+  <div class="speed-title">{card["name"]} {badge}</div>
+  <div class="speed-meta">{card["type"]} / S種族値 {card["base"]} / 実数 {card["actual"]}</div>
+  <div class="speed-track">
+    <div class="speed-fill" style="width:{int(card["ratio"] * 100)}%;"></div>
+  </div>
+</div>
+"""
+            )
+        st.markdown('<div class="speed-grid">' + "".join(speed_items) + "</div>", unsafe_allow_html=True)
+
         speed_checks = speed_target_check(team, POKEMON_DB, speed_nature)
+        timeline_items = []
         for target, data in speed_checks.items():
-            st.write(f"- {target} (目安 {data['target']}): {'抜ける' if data['ok'] else '抜けない'}")
+            state = "ok" if data["ok"] else "ng"
+            label = "クリア" if data["ok"] else "未達"
+            timeline_items.append(
+                f"""
+<div class="timeline-item {state}">
+  <div class="timeline-dot"></div>
+  <div class="timeline-body">
+    <div class="timeline-title">{target}</div>
+    <div class="timeline-meta">目安 {data["target"]} · {label}</div>
+  </div>
+</div>
+"""
+            )
+        st.markdown('<div class="timeline">' + "".join(timeline_items) + "</div>", unsafe_allow_html=True)
 
     st.subheader("全ポケモンSライン比較")
     st.write("性格補正込みの最速実数値でランキング表示します。")
     speed_query = st.text_input("名前で絞り込み", "", key="speed_query")
-    speed_limit = st.slider("表示件数", 50, 500, 200, step=50)
+    speed_limit = st.slider("表示件数", 20, 200, 60, step=20)
     speed_df = build_speed_ranking(POKEMON_DB, speed_nature)
     if speed_query:
         speed_df = speed_df[speed_df["ポケモン"].str.contains(speed_query)]
-    st.dataframe(speed_df.head(speed_limit), use_container_width=True)
+    ranked = speed_df.head(speed_limit)
+    speed_rows = []
+    max_val = ranked["S最大実数"].max() if not ranked.empty else 0
+    for _, row in ranked.iterrows():
+        ratio = 0 if max_val == 0 else row["S最大実数"] / max_val
+        speed_rows.append(
+            f"""
+<div class="speed-rank-card">
+  <div class="speed-rank-title">{row["ポケモン"]}</div>
+  <div class="speed-rank-meta">{row["タイプ"]} · S種族値 {row["S種族値"]} · 実数 {row["S最大実数"]}</div>
+  <div class="speed-track">
+    <div class="speed-fill" style="width:{int(ratio * 100)}%;"></div>
+  </div>
+</div>
+"""
+        )
+    st.markdown('<div class="speed-rank-grid">' + "".join(speed_rows) + "</div>", unsafe_allow_html=True)
 
     st.subheader("構築の書き出し")
     export_text = export_showdown(team, POKEMON_DB)
@@ -411,8 +473,22 @@ with tabs[4]:
         st.subheader("要注意ポケモンランキング")
         ranking = battle_log_summary(st.session_state.battle_logs)
         if ranking:
+            risk_cards = []
+            top_count = ranking[0][1]
             for name, count in ranking[:10]:
-                st.write(f"- {name}: {count}回")
+                ratio = 0 if top_count == 0 else count / top_count
+                risk_cards.append(
+                    f"""
+<div class="risk-card">
+  <div class="risk-title">{name}</div>
+  <div class="risk-meta">被害回数: {count}</div>
+  <div class="risk-track">
+    <div class="risk-fill" style="width:{int(ratio * 100)}%;"></div>
+  </div>
+</div>
+"""
+                )
+            st.markdown('<div class="risk-grid">' + "".join(risk_cards) + "</div>", unsafe_allow_html=True)
         else:
             st.write("まだ負け試合の記録がありません。")
 
