@@ -5,42 +5,49 @@ def apply_custom_css() -> None:
     st.markdown(
         """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Impact&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap');
 
 :root {
-  --bg: #F8FAFC;
-  --panel: #FFFFFF;
-  --panel-border: #E2E8F0;
-  --accent: #3B82F6;
-  --text: #1E293B;
-  --muted: #64748B;
-  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  --shadow-hover: 0 16px 36px rgba(15, 23, 42, 0.12);
-  --hero-glow-1: rgba(59, 130, 246, 0.16);
-  --hero-glow-2: rgba(34, 197, 94, 0.12);
-  --hero-glow-3: rgba(249, 115, 22, 0.12);
+  --bg: #0B0F2A;
+  --panel: #12183A;
+  --panel-border: rgba(255, 215, 0, 0.5);
+  --accent: #FFB800;
+  --text: #F8FAFF;
+  --muted: rgba(248, 250, 255, 0.72);
+  --shadow: 0 16px 30px rgba(0, 0, 0, 0.45);
+  --shadow-hover: 0 24px 40px rgba(0, 0, 0, 0.55);
+  --hero-glow-1: rgba(255, 184, 0, 0.35);
+  --hero-glow-2: rgba(0, 212, 255, 0.25);
+  --hero-glow-3: rgba(255, 61, 87, 0.22);
 }
 
 body {
-  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+  background:
+    radial-gradient(circle at center, rgba(255, 184, 0, 0.2), transparent 55%),
+    radial-gradient(circle at 20% 30%, rgba(0, 212, 255, 0.18), transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 61, 87, 0.2), transparent 45%),
+    #0B0F2A;
   color: var(--text);
-  font-family: 'Inter', 'Noto Sans JP', sans-serif;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
 }
 .main { padding-top: 0.75rem; }
 section[data-testid="stSidebar"] {
-  background: #F8FAFC;
-  border-right: 1px solid var(--panel-border);
+  background: rgba(11, 15, 42, 0.95);
+  border-right: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 h1, h2, h3, h4, h5 {
-  color: var(--text);
-  font-family: 'Inter', 'Noto Sans JP', sans-serif;
-  letter-spacing: 0.01em;
+  color: #FFF5CC;
+  font-family: 'Impact', 'M PLUS Rounded 1c', sans-serif;
+  letter-spacing: 0.03em;
+  font-style: italic;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  -webkit-text-stroke: 1px rgba(0,0,0,0.5);
 }
 
 .divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #CBD5F5, transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.8), transparent);
   margin: 0.75rem 0;
 }
 
@@ -48,8 +55,8 @@ h1, h2, h3, h4, h5 {
   position: relative;
   padding: 0.9rem 1rem;
   border-radius: 16px;
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
+  background: linear-gradient(135deg, rgba(30, 35, 70, 0.95), rgba(18, 24, 58, 0.95));
+  border: 1px solid rgba(255, 215, 0, 0.6);
   box-shadow: var(--shadow);
   margin-bottom: 0.9rem;
   transform-style: preserve-3d;
@@ -59,7 +66,7 @@ h1, h2, h3, h4, h5 {
 .card:hover {
   transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
   box-shadow: var(--shadow-hover);
-  border-color: #CBD5E1;
+  border-color: rgba(255, 215, 0, 0.9);
 }
 
 .card-title {
@@ -77,12 +84,13 @@ h1, h2, h3, h4, h5 {
   width: 96px;
   height: 96px;
   border-radius: 12px;
-  background: #F1F5F9;
-  border: 1px solid var(--panel-border);
+  background: radial-gradient(circle at top, #1E2C6D, #0F1534);
+  border: 2px solid rgba(255, 215, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  box-shadow: inset 0 0 12px rgba(255, 215, 0, 0.3);
 }
 
 .card-image img {
@@ -107,7 +115,7 @@ h1, h2, h3, h4, h5 {
   font-size: 0.78rem;
   font-weight: 700;
   margin-right: 0.25rem;
-  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.08);
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25);
 }
 
 div[data-testid="stSelectbox"] > div, div[data-testid="stMultiSelect"] > div {
@@ -116,17 +124,19 @@ div[data-testid="stSelectbox"] > div, div[data-testid="stMultiSelect"] > div {
 
 div.stButton > button {
   font-size: 1.05rem;
-  padding: 0.7rem 1.1rem;
-  border-radius: 12px;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: #FFFFFF;
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
+  padding: 0.75rem 1.3rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 215, 0, 0.9);
+  background: linear-gradient(180deg, #FFE799, #FFB800);
+  color: #2B1A00;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), inset 0 -4px 8px rgba(154, 88, 0, 0.45);
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 div.stButton > button:hover {
-  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.25);
-  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.45), inset 0 -6px 10px rgba(154, 88, 0, 0.6);
+  transform: translateY(-2px);
 }
 
 .hero-section {
@@ -136,7 +146,7 @@ div.stButton > button:hover {
   overflow: hidden;
   background: linear-gradient(120deg, var(--hero-glow-1), var(--hero-glow-2), var(--hero-glow-3));
   background-size: 300% 300%;
-  border: 1px solid var(--panel-border);
+  border: 2px solid rgba(255, 215, 0, 0.7);
   box-shadow: var(--shadow);
   margin-bottom: 1.2rem;
   isolation: isolate;
@@ -170,14 +180,15 @@ div.stButton > button:hover {
 
 .hero-title {
   position: relative;
-  font-size: 2.1rem;
+  font-size: 2.8rem;
   z-index: 1;
 }
 
 .hero-sub {
   position: relative;
   z-index: 1;
-  color: var(--muted);
+  color: #FFF5CC;
+  font-weight: 700;
 }
 
 .glass-panel {
@@ -188,22 +199,24 @@ div.stButton > button:hover {
   box-shadow: var(--shadow);
 }
 
-.pokemon-card {
+.pokemon-card,
+.poke-card {
   position: relative;
   border-radius: 20px;
   padding: 1rem 1.2rem;
-  background: var(--panel);
-  border: 1px solid var(--type-color, var(--panel-border));
+  background: linear-gradient(135deg, rgba(50, 10, 10, 0.92), rgba(12, 8, 30, 0.95));
+  border: 2px solid rgba(255, 215, 0, 0.9);
   box-shadow: var(--shadow);
   transform-style: preserve-3d;
   perspective: 900px;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.pokemon-card:hover {
+.pokemon-card:hover,
+.poke-card:hover {
   transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
-  box-shadow: var(--shadow-hover), 0 18px 38px var(--type-glow, rgba(148, 163, 184, 0.16));
-  border-color: var(--type-color, #CBD5E1);
+  box-shadow: var(--shadow-hover), 0 18px 38px var(--type-glow, rgba(255, 184, 0, 0.5));
+  border-color: var(--type-color, rgba(255, 215, 0, 0.9));
 }
 
 .pokemon-card-header {
@@ -230,44 +243,94 @@ div.stButton > button:hover {
 
 .stat-bar {
   position: relative;
-  height: 10px;
+  height: 12px;
   border-radius: 999px;
-  background: #E2E8F0;
+  background: rgba(15, 20, 50, 0.9);
   overflow: hidden;
+  border: 1px solid rgba(255, 215, 0, 0.45);
 }
 
 .stat-bar-fill {
   height: 100%;
   border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.45);
+}
+
+.stat-bar-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255,255,255,0.45), rgba(255,255,255,0.05));
+  opacity: 0.6;
+  animation: liquidFlow 2.8s linear infinite;
 }
 
 .stat-bar-label {
   font-size: 0.78rem;
-  color: var(--muted);
+  color: #FFF5CC;
   margin-bottom: 0.2rem;
 }
 
 div[data-testid="stTabs"] button {
-  background: #F1F5F9 !important;
-  color: var(--muted) !important;
+  background: rgba(12, 16, 40, 0.9) !important;
+  color: #FFF5CC !important;
   border-radius: 999px !important;
   padding: 0.5rem 1.2rem !important;
-  border: 1px solid var(--panel-border) !important;
+  border: 1px solid rgba(255, 215, 0, 0.6) !important;
 }
 
 div[data-testid="stTabs"] button[aria-selected="true"] {
-  color: var(--text) !important;
-  border-color: #93C5FD !important;
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.18);
-  background: #FFFFFF !important;
+  color: #2B1A00 !important;
+  border-color: rgba(255, 215, 0, 0.9) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(180deg, #FFE799, #FFB800) !important;
 }
 
 .analysis-panel {
-  background: #F8FAFC;
-  border: 1px solid var(--panel-border);
+  background: rgba(10, 14, 36, 0.95);
+  border: 1px solid rgba(255, 215, 0, 0.6);
   border-radius: 18px;
   padding: 1rem 1.2rem;
   box-shadow: var(--shadow);
+}
+
+.deck-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.9rem;
+  margin: 0.8rem 0 1.2rem;
+}
+
+.deck-slot {
+  text-align: center;
+}
+
+.deck-frame {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 0.4rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at top, #1B2C6D, #0B0F2A);
+  border: 3px solid rgba(255, 215, 0, 0.9);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(255, 215, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.deck-frame img {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+}
+
+.deck-name {
+  font-weight: 700;
+  color: #FFF5CC;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.6);
 }
 
 .ai-panel {
@@ -794,6 +857,11 @@ div[data-testid="stTabs"] button[aria-selected="true"] {
   0% { transform: translate3d(0, 0, 0); }
   50% { transform: translate3d(1%, -1%, 0); }
   100% { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes liquidFlow {
+  0% { transform: translateX(-40%); }
+  100% { transform: translateX(40%); }
 }
 
 @keyframes badgePulse {

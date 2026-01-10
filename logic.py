@@ -1059,11 +1059,11 @@ def render_stat_bar(value: int, label: str) -> str:
     ratio = max(0, min(value, max_value)) / max_value
     percent = int(ratio * 100)
     if ratio >= 0.8:
-        color = "linear-gradient(90deg, #60A5FA, #93C5FD)"
+        color = "linear-gradient(90deg, #FFB800, #FFF2B0)"
     elif ratio >= 0.5:
-        color = "linear-gradient(90deg, #3B82F6, #60A5FA)"
+        color = "linear-gradient(90deg, #22D3EE, #38BDF8)"
     else:
-        color = "linear-gradient(90deg, #2563EB, #3B82F6)"
+        color = "linear-gradient(90deg, #F97316, #FACC15)"
     return (
         f"<div class='stat-bar-label'>{label} {value}</div>"
         f"<div class='stat-bar'><div class='stat-bar-fill' style='width:{percent}%; background:{color};'></div></div>"

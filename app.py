@@ -72,8 +72,8 @@ st.set_page_config(page_title="ポケモン構築サポーター", layout="wide"
 apply_custom_css()
 
 
-st.title("ポケモン構築サポーター")
-st.write("軸ポケモンを決め、補完枠や弱点をスマホで直感的にチェックできます。")
+st.title("POKEDVISOR 2026")
+st.write("BATTLE ANALYZING... 戦術AIが勝ち筋を抽出しています。")
 
 POKEMON_DB = load_pokemon_db()
 
@@ -113,8 +113,8 @@ team = [slot["pokemon"] for slot in team_slots if slot["pokemon"] != NO_SELECTIO
 
 hero_name = team[0] if team else None
 hero_image = get_image_url(POKEMON_DB[hero_name]) if hero_name else ""
-hero_title = "Pokemon Build Studio"
-hero_sub = "プロフェッショナル・ライトモード構築ダッシュボード"
+hero_title = "POKEDVISOR 2026"
+hero_sub = "ULTIMATE STRATEGY · MONSTER STRIKE STYLE"
 hero_bg = f"background-image: url('{hero_image}');" if hero_image else ""
 st.markdown(
     f"""
@@ -222,6 +222,20 @@ with tabs[0]:
     if not team:
         st.info("まずはポケモンを1体選んでください。")
     else:
+        deck_items = []
+        for slot in st.session_state.team_slots:
+            name = slot["pokemon"]
+            if name == NO_SELECTION:
+                deck_items.append(
+                    "<div class='deck-slot'><div class='deck-frame'></div><div class='deck-name'>EMPTY</div></div>"
+                )
+            else:
+                info = POKEMON_DB[name]
+                deck_items.append(
+                    f"<div class='deck-slot'><div class='deck-frame'><img src='{get_image_url(info)}' alt='{name}'/></div>"
+                    f"<div class='deck-name'>{name}</div></div>"
+                )
+        st.markdown("<div class='deck-strip'>" + "".join(deck_items) + "</div>", unsafe_allow_html=True)
         st.write(f"現在のメンバー数: {len(team)} / 6")
         cols = st.columns(3)
         for idx, slot in enumerate(st.session_state.team_slots):
@@ -252,7 +266,7 @@ with tabs[0]:
                 ]
             )
             card_html = (
-                f'<div class="pokemon-card {type_class}">'
+                f'<div class="pokemon-card poke-card {type_class}">'
                 f'<div class="type-watermark">{watermark}</div>'
                 f'<div class="pokemon-card-header">'
                 f'  <div class="card-image"><img src="{image_url}" alt="{name}"/></div>'
@@ -284,7 +298,7 @@ with tabs[0]:
             st.markdown(
                 f"""
 <div class="analysis-panel">
-  <div style="font-weight:600; margin-bottom:0.5rem;">AI分析中...</div>
+  <div style="font-weight:800; margin-bottom:0.5rem;">BATTLE ANALYZING...</div>
   {plan_items}
 </div>
 """,
@@ -294,7 +308,7 @@ with tabs[0]:
             st.markdown(
                 """
 <div class="analysis-panel">
-  <div style="font-weight:600; margin-bottom:0.5rem;">AI分析中...</div>
+  <div style="font-weight:800; margin-bottom:0.5rem;">BATTLE ANALYZING...</div>
   <div>現時点では明確な勝ち筋が不足しています。起点作成やエースを追加してください。</div>
 </div>
 """,
@@ -549,8 +563,8 @@ else:
         f"""
 <div class="ai-panel">
   <div class="ai-header">
-    <div class="ai-title">AI戦術参謀 · 思考中...</div>
-    <div class="ai-sub">構築の意図と環境メタを照合しています。</div>
+    <div class="ai-title">MISSION</div>
+    <div class="ai-sub">極秘データを解析中 · BATTLE ANALYZING...</div>
   </div>
   <div class="ai-grid">
     <div class="ai-card">
@@ -572,7 +586,7 @@ else:
     </div>
   </div>
   <div class="ai-footer">
-    <div class="ai-card-title">結論</div>
+    <div class="ai-card-title">ADVICE</div>
     <div class="ai-badges">{strengths_html}</div>
     <div class="ai-badges warn">{weaknesses_html}</div>
   </div>
