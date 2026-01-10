@@ -390,6 +390,17 @@ div[data-testid="stTabs"] button[aria-selected="true"] {
   box-shadow: 0 0 0 rgba(239, 68, 68, 0.2);
 }
 
+.insight-highlight {
+  margin-top: 0.8rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 16px;
+  background: linear-gradient(120deg, rgba(30, 64, 175, 0.12), rgba(15, 23, 42, 0.08));
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #1E293B;
+  font-weight: 700;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
 .insight-card {
   border-radius: 18px;
   padding: 1rem 1.2rem;
@@ -450,6 +461,44 @@ div[data-testid="stTabs"] button[aria-selected="true"] {
   margin-bottom: 0.4rem;
   font-weight: 600;
   color: #1E293B;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.9rem;
+  margin-top: 0.6rem;
+}
+
+.plan-card {
+  border-radius: 18px;
+  padding: 1rem 1.1rem;
+  background: #FFFFFF;
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow);
+}
+
+.plan-card.highlight {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: linear-gradient(135deg, rgba(254, 202, 202, 0.4), rgba(219, 234, 254, 0.6));
+  box-shadow: 0 16px 32px rgba(239, 68, 68, 0.15);
+}
+
+.plan-title {
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.plan-body {
+  color: #1E293B;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.plan-meta {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin-bottom: 0.2rem;
 }
 
 .tera-grid {

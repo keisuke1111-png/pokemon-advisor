@@ -543,6 +543,128 @@ def tactical_review(team: list[str], db: dict) -> dict:
     return review
 
 
+def _team_signature(team: list[str]) -> int:
+    return sum(sum(ord(c) for c in name) for name in team) % 7
+
+
+def generate_anti_meta_plans(team: list[str], db: dict) -> list[dict]:
+    if not team:
+        return []
+    options = []
+    signature = _team_signature(team)
+    tera_solutions = suggest_tera_solutions(team, db)
+    sweep = sweep_support_status(team, db)
+    if tera_solutions:
+        s = tera_solutions[signature % len(tera_solutions)]
+        candidates = " / ".join(s["candidates"])
+        options.append(
+            {
+                "title": "奇策テラ切り返し",
+                "plan": f"敢えて不利対面で{candidates}に{s['tera']}テラスを切り、{s['weak_type']}一貫を遮断して流れを奪う。",
+                "risk": "テラス温存が崩れた場合の再現性が低い。",
+                "reward": "相手の計算を外し、一気に主導権を奪える。",
+                "highlight": True,
+            }
+        )
+    if sweep["sweepers"]:
+        sweeper = sweep["sweepers"][0]
+        options.append(
+            {
+                "title": "囮展開",
+                "plan": f"受け駒を捨て気味に使い、{sweeper}の全抜きラインを最優先で作る。",
+                "risk": "受け回しが崩れて一気に不利になる。",
+                "reward": "相手が守りに入る前に試合を決められる。",
+                "highlight": True,
+            }
+        )
+    if not options:
+        options.append(
+            {
+                "title": "速度逆転プラン",
+                "plan": "先制技や切り返し技に寄せ、相手のSラインを無視した攻め筋を構築する。",
+                "risk": "交代戦に弱くなりやすい。",
+                "reward": "相手の想定を崩しやすい。",
+                "highlight": True,
+            }
+        )
+    return options
+
+
+def resource_priority_advice(team: list[str], db: dict) -> list[str]:
+    advice = []
+    sweep = sweep_support_status(team, db)
+    if sweep["sweepers"]:
+        advice.append(f"勝ち筋のエースは{', '.join(sweep['sweepers'][:2])}。HP温存を最優先。")
+    cores = detect_cores(team, db)
+    if cores:
+        core_members = " / ".join(cores[0]["members"])
+        advice.append(f"{core_members}はサイクルの心臓。交代で削られ過ぎないよう注意。")
+    cycle = evaluate_cycle_score(team, db)
+    if cycle["pivots"] == 0:
+        advice.append("不利対面の処理はテラス権で行う前提。温存ラインを確保。")
+    else:
+        pivots = ", ".join(cycle["pivot_names"][:2])
+        advice.append(f"{pivots}は対面操作の鍵。持ち物・HPを後半まで残す。")
+    return advice
+
+
+def win_loss_simulation(team: list[str], db: dict) -> dict:
+    if not team:
+        return {"win": [], "loss": []}
+    sweep = sweep_support_status(team, db)
+    wins = []
+    losses = []
+    if sweep["sweepers"]:
+        sweeper = sweep["sweepers"][0]
+        wins.append(f"{sweeper}の起点が完成すれば全抜きが見える。")
+        losses.append(f"{sweeper}が削られると勝ち筋が消える。")
+    critical = detect_critical_vulnerabilities(team, db)
+    if critical:
+        losses.append(f"{critical[0]['name']}の一貫が止まらないと負け筋。")
+    cycle = evaluate_cycle_score(team, db)
+    if cycle["pivots"] >= 2:
+        wins.append("対面操作で有利対面を繰り返せれば試合を優位に運べる。")
+    else:
+        losses.append("交代戦が続くと不利な対面を解消できない。")
+    return {"win": wins, "loss": losses}
+
+
+def build_dual_plans(team: list[str], db: dict) -> list[dict]:
+    if not team:
+        return []
+    plans = []
+    review = tactical_review(team, db)
+    default_plan = {
+        "title": "プランA：定石",
+        "plan": review["wins"][0] if review["wins"] else "起点作成→エースで全抜きを目指す。",
+        "risk": "相手の受けルートにハマると詰みやすい。",
+        "reward": "再現性が高く安定した勝ち筋。",
+        "highlight": False,
+    }
+    plans.append(default_plan)
+    anti_meta = generate_anti_meta_plans(team, db)
+    if anti_meta:
+        anti = anti_meta[_team_signature(team) % len(anti_meta)]
+        anti["title"] = "プランB：奇策"
+        plans.append(anti)
+    return plans
+
+
+def varied_insight_lines(team: list[str], db: dict) -> list[str]:
+    variants = [
+        "相手の勝ち筋を断つより、自分の勝ち筋を太くする方が速い局面。",
+        "1ターンの猶予を作れれば、勝ち筋が現実になる構図。",
+        "表の対策より裏の押し付けで試合速度を上げるべき。",
+        "受けではなく対面操作でテンポを取るのが正解。",
+        "テラスの使い所が勝敗を決める構築。",
+        "勝ち筋は細いが、通れば一瞬で決まるタイプ。",
+    ]
+    if not team:
+        return []
+    pick = _team_signature(team)
+    return [variants[pick % len(variants)]]
+
+
 def meta_threat_levels(team: list[str], db: dict) -> list[dict]:
     results = []
     for name, types in META_TOP_POKEMON.items():

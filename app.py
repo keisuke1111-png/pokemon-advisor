@@ -34,6 +34,7 @@ from logic import (
     detect_cores,
     estimate_survivability,
     evaluate_cycle_score,
+    build_dual_plans,
     export_showdown,
     filter_pokemon_names,
     get_image_url,
@@ -57,6 +58,9 @@ from logic import (
     suggest_tera_solutions,
     sweep_support_status,
     tactical_review,
+    resource_priority_advice,
+    win_loss_simulation,
+    varied_insight_lines,
     table_to_plotly,
     team_role_balance,
     team_slots_from_members,
@@ -517,6 +521,10 @@ else:
     survivals = estimate_survivability(team, POKEMON_DB)
     tera_solutions = suggest_tera_solutions(team, POKEMON_DB)
     review = tactical_review(team, POKEMON_DB)
+    dual_plans = build_dual_plans(team, POKEMON_DB)
+    resource_advice = resource_priority_advice(team, POKEMON_DB)
+    win_loss = win_loss_simulation(team, POKEMON_DB)
+    insights = varied_insight_lines(team, POKEMON_DB)
 
     score_value = score_pack["score"]
     if score_value >= 80:
@@ -572,6 +580,57 @@ else:
 """,
         unsafe_allow_html=True,
     )
+
+    if insights:
+        st.markdown(
+            f"<div class='insight-highlight'>{insights[0]}</div>",
+            unsafe_allow_html=True,
+        )
+
+    st.subheader("プランA / プランB")
+    plan_cards = []
+    for plan in dual_plans:
+        highlight_class = "highlight" if plan["highlight"] else ""
+        plan_cards.append(
+            f"""
+<div class="plan-card {highlight_class}">
+  <div class="plan-title">{plan["title"]}</div>
+  <div class="plan-body">{plan["plan"]}</div>
+  <div class="plan-meta">リスク: {plan["risk"]}</div>
+  <div class="plan-meta">リターン: {plan["reward"]}</div>
+</div>
+"""
+        )
+    st.markdown("<div class='plan-grid'>" + "".join(plan_cards) + "</div>", unsafe_allow_html=True)
+
+    if resource_advice:
+        st.subheader("リソース配分")
+        advice_html = "".join([f"<div class='insight-line'>{a}</div>" for a in resource_advice])
+        st.markdown(
+            f"""
+<div class="insight-card">
+  <div class="insight-title">優先順位</div>
+  {advice_html}
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    if win_loss["win"] or win_loss["loss"]:
+        st.subheader("勝ち筋 / 負け筋")
+        win_html = "".join([f"<div class='scenario-step'>◎ {w}</div>" for w in win_loss["win"]])
+        loss_html = "".join([f"<div class='scenario-step'>× {l}</div>" for l in win_loss["loss"]])
+        st.markdown(
+            f"""
+<div class="scenario-card">
+  <div class="insight-title">勝ち筋</div>
+  {win_html or "<div class='scenario-step'>明確な勝ち筋は未形成</div>"}
+  <div class="insight-title">負け筋</div>
+  {loss_html or "<div class='scenario-step'>致命的な負け筋は未検出</div>"}
+</div>
+""",
+            unsafe_allow_html=True,
+        )
 
     st.subheader("タクティカル・レビュー")
     if not review["alerts"]:
