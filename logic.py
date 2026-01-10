@@ -286,6 +286,129 @@ def get_type_css_class(info: dict) -> str:
     return type_map.get(primary, "card-normal")
 
 
+def detect_cores(team: list[str], db: dict) -> list[dict]:
+    cores = []
+    if not team:
+        return cores
+    type_to_members: dict[str, list[str]] = {t: [] for t in TYPES}
+    for name in team:
+        for t in get_types(db[name]):
+            type_to_members[t].append(name)
+
+    if type_to_members["ほのお"] and type_to_members["みず"] and type_to_members["くさ"]:
+        cores.append(
+            {
+                "name": "炎・水・草コア",
+                "members": [
+                    type_to_members["ほのお"][0],
+                    type_to_members["みず"][0],
+                    type_to_members["くさ"][0],
+                ],
+            }
+        )
+
+    volt_users = [n for n in team if "ボルトチェンジ" in get_all_moves(db[n])]
+    uturn_users = [n for n in team if "とんぼがえり" in get_all_moves(db[n])]
+    if volt_users and uturn_users:
+        cores.append(
+            {
+                "name": "ボルトン軸",
+                "members": [volt_users[0], uturn_users[0]],
+            }
+        )
+    return cores
+
+
+def identify_sweepers(team: list[str], db: dict) -> list[str]:
+    sweepers = []
+    sweeper_abilities = {"かそく", "ビーストブースト", "じしんかじょう", "エナジーエンジン"}
+    for name in team:
+        info = db[name]
+        stats = info["stats"]
+        speed = stats["S"]
+        power = max(stats["A"], stats["C"])
+        abilities = set(info.get("abilities", []))
+        has_boost = any(m in BOOST_MOVES for m in get_all_moves(info))
+        if speed >= 110 and power >= 115:
+            sweepers.append(name)
+        elif has_boost and speed >= 90 and power >= 110:
+            sweepers.append(name)
+        elif abilities & sweeper_abilities and speed >= 90:
+            sweepers.append(name)
+    return sweepers
+
+
+def sweep_support_status(team: list[str], db: dict) -> dict:
+    sweepers = identify_sweepers(team, db)
+    has_setup = any(is_setup_role(db[p]) for p in team)
+    return {"sweepers": sweepers, "has_setup": has_setup}
+
+
+def detect_critical_vulnerabilities(team: list[str], db: dict) -> list[dict]:
+    critical = []
+    for name, types in META_TOP_POKEMON.items():
+        weak_count = 0
+        total_damage = 0.0
+        for p in team:
+            mults = [type_multiplier(t, get_types(db[p])) for t in types]
+            total_damage += max(mults)
+            if any(m >= 2 for m in mults):
+                weak_count += 1
+        if weak_count >= 3:
+            critical.append(
+                {
+                    "name": name,
+                    "types": types,
+                    "weak_count": weak_count,
+                    "damage": round(total_damage, 2),
+                }
+            )
+    return critical
+
+
+def calculate_balance_score(team: list[str], db: dict) -> dict:
+    score = 100
+    strengths = []
+    weaknesses = []
+
+    if not team:
+        return {"score": 0, "strengths": [], "weaknesses": ["未選択"], "cores": []}
+
+    role_counts, missing_roles = team_role_balance(team, db)
+    if not missing_roles:
+        strengths.append("主要ロールが揃っている")
+    else:
+        score -= 8 * len(missing_roles)
+        weaknesses.append(f"不足ロール: {', '.join(missing_roles)}")
+
+    cores = detect_cores(team, db)
+    if cores:
+        strengths.append("有名コアを形成")
+        score += min(8, 4 * len(cores))
+
+    sweep_status = sweep_support_status(team, db)
+    if sweep_status["sweepers"] and sweep_status["has_setup"]:
+        strengths.append("抜きエースと起点作成が両立")
+        score += 6
+    elif sweep_status["sweepers"] and not sweep_status["has_setup"]:
+        weaknesses.append("抜き性能は高いが起点作成が不足")
+        score -= 8
+
+    critical = detect_critical_vulnerabilities(team, db)
+    if critical:
+        score -= 10 * len(critical)
+        weaknesses.extend([f"{c['name']}が一貫" for c in critical])
+
+    def_table = calc_defensive_table(team, db)
+    heavy_weak = def_table[def_table["弱点"] >= 3]["攻撃タイプ"].tolist()
+    if heavy_weak:
+        score -= 2 * len(heavy_weak)
+        weaknesses.append(f"被ダメ偏り: {', '.join(heavy_weak[:4])}")
+
+    score = max(0, min(100, score))
+    return {"score": score, "strengths": strengths, "weaknesses": weaknesses, "cores": cores}
+
+
 def meta_threat_levels(team: list[str], db: dict) -> list[dict]:
     results = []
     for name, types in META_TOP_POKEMON.items():

@@ -27,8 +27,11 @@ from logic import (
     build_tactical_plans,
     calc_defensive_table,
     calc_offensive_table,
+    calculate_balance_score,
     counter_candidates,
     calc_stat_max,
+    detect_critical_vulnerabilities,
+    detect_cores,
     export_showdown,
     filter_pokemon_names,
     get_image_url,
@@ -49,6 +52,7 @@ from logic import (
     speed_target_check,
     build_speed_cards,
     suggest_complements,
+    sweep_support_status,
     table_to_plotly,
     team_role_balance,
     team_slots_from_members,
@@ -496,3 +500,67 @@ with tabs[4]:
         df_logs = pd.DataFrame(st.session_state.battle_logs)
         csv_data = df_logs.to_csv(index=False)
         st.download_button("CSVをダウンロード", csv_data, file_name="battle_logs.csv")
+
+st.subheader("AI戦術参謀のレポート")
+if not team:
+    st.info("パーティを選択するとAIが戦術レポートを提示します。")
+else:
+    score_pack = calculate_balance_score(team, POKEMON_DB)
+    sweep_status = sweep_support_status(team, POKEMON_DB)
+    critical = detect_critical_vulnerabilities(team, POKEMON_DB)
+    cores = detect_cores(team, POKEMON_DB)
+
+    score_value = score_pack["score"]
+    if score_value >= 80:
+        score_color = "#2563EB"
+    elif score_value >= 60:
+        score_color = "#F59E0B"
+    else:
+        score_color = "#EF4444"
+    strengths = score_pack["strengths"] or ["即戦力の尖りはまだ未確定"]
+    weaknesses = score_pack["weaknesses"] or ["致命的な弱点は見当たりません"]
+    core_labels = [c["name"] for c in cores] or ["未検出"]
+
+    strengths_html = "".join([f"<span class='badge badge-good'>{s}</span>" for s in strengths])
+    weaknesses_html = "".join([f"<span class='alert-badge'>{w}</span>" for w in weaknesses])
+    cores_html = "".join([f"<span class='badge badge-core'>{c}</span>" for c in core_labels])
+
+    sweep_text = " / ".join(sweep_status["sweepers"]) if sweep_status["sweepers"] else "未確定"
+    support_text = "起点作成あり" if sweep_status["has_setup"] else "起点作成不足"
+    critical_text = " / ".join([c["name"] for c in critical]) if critical else "なし"
+
+    st.markdown(
+        f"""
+<div class="ai-panel">
+  <div class="ai-header">
+    <div class="ai-title">AI戦術参謀 · 思考中...</div>
+    <div class="ai-sub">構築の意図と環境メタを照合しています。</div>
+  </div>
+  <div class="ai-grid">
+    <div class="ai-card">
+      <div class="ai-card-title">総合バランススコア</div>
+      <div class="score-ring" style="--score:{score_value}; --score-color:{score_color};">
+        <div class="score-value">{score_value}</div>
+        <div class="score-label">/ 100</div>
+      </div>
+    </div>
+    <div class="ai-card">
+      <div class="ai-card-title">抜き性能チェック</div>
+      <div class="ai-line">スイーパー: {sweep_text}</div>
+      <div class="ai-line">サポート: {support_text}</div>
+      <div class="ai-line">致命的な脆弱性: {critical_text}</div>
+    </div>
+    <div class="ai-card">
+      <div class="ai-card-title">コア認識</div>
+      <div class="ai-badges">{cores_html}</div>
+    </div>
+  </div>
+  <div class="ai-footer">
+    <div class="ai-card-title">結論</div>
+    <div class="ai-badges">{strengths_html}</div>
+    <div class="ai-badges warn">{weaknesses_html}</div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
