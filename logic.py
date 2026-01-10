@@ -13,6 +13,7 @@ from constants import (
     META_COMBOS,
     META_THREATS,
     META_TOP_POKEMON,
+    META_TOP_RATIONALE,
     NATURE_EFFECTS,
     NO_SELECTION,
     PRIORITY_MOVES,
@@ -407,6 +408,139 @@ def calculate_balance_score(team: list[str], db: dict) -> dict:
 
     score = max(0, min(100, score))
     return {"score": score, "strengths": strengths, "weaknesses": weaknesses, "cores": cores}
+
+
+def estimate_survivability(team: list[str], db: dict) -> list[dict]:
+    results = []
+    for threat, rationale in META_TOP_RATIONALE.items():
+        attackers = rationale["pressure_types"]
+        for name in team:
+            info = db[name]
+            types = get_types(info)
+            bulk = info["stats"]["H"] + info["stats"]["B"] + info["stats"]["D"]
+            mult = max(type_multiplier(t, types) for t in attackers)
+            if mult >= 2 and bulk < 300:
+                verdict = "危険"
+            elif mult >= 2:
+                verdict = "要注意"
+            elif mult <= 0.5:
+                verdict = "安定"
+            else:
+                verdict = "互角"
+            results.append(
+                {
+                    "threat": threat,
+                    "name": name,
+                    "mult": mult,
+                    "bulk": bulk,
+                    "verdict": verdict,
+                }
+            )
+    return results
+
+
+def evaluate_cycle_score(team: list[str], db: dict) -> dict:
+    volt_users = [n for n in team if "ボルトチェンジ" in get_all_moves(db[n])]
+    uturn_users = [n for n in team if "とんぼがえり" in get_all_moves(db[n])]
+    pivots = len(set(volt_users + uturn_users))
+    cushions = [n for n in team if "クッション" in db[n]["role_labels"] or "受け" in db[n]["role_labels"]]
+    score = min(100, pivots * 18 + len(cushions) * 12)
+    if pivots == 0:
+        label = "低"
+    elif pivots == 1:
+        label = "中"
+    else:
+        label = "高"
+    return {
+        "score": score,
+        "label": label,
+        "pivots": pivots,
+        "pivot_names": list(dict.fromkeys(volt_users + uturn_users)),
+        "cushions": cushions,
+    }
+
+
+def suggest_tera_solutions(team: list[str], db: dict) -> list[dict]:
+    solutions = []
+    if not team:
+        return solutions
+    def_table = calc_defensive_table(team, db)
+    weak_types = def_table[def_table["弱点"] >= 3]["攻撃タイプ"].tolist()
+    if not weak_types:
+        return solutions
+    defensive_tera = {
+        "ほのお": "みず",
+        "みず": "くさ",
+        "でんき": "じめん",
+        "くさ": "ほのお",
+        "こおり": "ほのお",
+        "かくとう": "フェアリー",
+        "どく": "はがね",
+        "じめん": "くさ",
+        "ひこう": "でんき",
+        "エスパー": "あく",
+        "むし": "ほのお",
+        "いわ": "みず",
+        "ゴースト": "あく",
+        "ドラゴン": "フェアリー",
+        "あく": "かくとう",
+        "はがね": "ほのお",
+        "フェアリー": "はがね",
+        "ノーマル": "はがね",
+    }
+    for wt in weak_types:
+        target_tera = defensive_tera.get(wt)
+        if not target_tera:
+            continue
+        candidates = []
+        for name in team:
+            info = db[name]
+            if wt in get_types(info):
+                continue
+            if type_multiplier(wt, get_types(info)) >= 2:
+                candidates.append(name)
+        if candidates:
+            solutions.append(
+                {
+                    "weak_type": wt,
+                    "tera": target_tera,
+                    "candidates": candidates[:2],
+                }
+            )
+    return solutions
+
+
+def tactical_review(team: list[str], db: dict) -> dict:
+    review = {"alerts": [], "reasons": [], "wins": []}
+    if not team:
+        return review
+
+    critical = detect_critical_vulnerabilities(team, db)
+    for item in critical:
+        reason = f"{item['name']}の攻撃範囲に対し、弱点が{item['weak_count']}体重なる"
+        review["alerts"].append(f"{item['name']}が重い")
+        review["reasons"].append(reason)
+
+    cycle = evaluate_cycle_score(team, db)
+    if cycle["label"] == "低":
+        review["alerts"].append("対面操作が困難")
+        review["reasons"].append("とんぼ/ボルチェン持ちが不足し、不利対面の解消が難しい")
+
+    sweep = sweep_support_status(team, db)
+    if sweep["sweepers"] and not sweep["has_setup"]:
+        review["alerts"].append("抜き性能の支援不足")
+        review["reasons"].append("スイーパーはいるが起点作成役がいない")
+
+    cores = detect_cores(team, db)
+    if cores:
+        core = cores[0]["members"]
+        review["wins"].append(f"{core[0]}で対面調整し、{core[1]}で有利対面を継続")
+
+    if sweep["sweepers"]:
+        sweeper = sweep["sweepers"][0]
+        review["wins"].append(f"起点作成→{sweeper}でテラス全抜きを狙う")
+
+    return review
 
 
 def meta_threat_levels(team: list[str], db: dict) -> list[dict]:

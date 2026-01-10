@@ -32,6 +32,8 @@ from logic import (
     calc_stat_max,
     detect_critical_vulnerabilities,
     detect_cores,
+    estimate_survivability,
+    evaluate_cycle_score,
     export_showdown,
     filter_pokemon_names,
     get_image_url,
@@ -52,7 +54,9 @@ from logic import (
     speed_target_check,
     build_speed_cards,
     suggest_complements,
+    suggest_tera_solutions,
     sweep_support_status,
+    tactical_review,
     table_to_plotly,
     team_role_balance,
     team_slots_from_members,
@@ -509,6 +513,10 @@ else:
     sweep_status = sweep_support_status(team, POKEMON_DB)
     critical = detect_critical_vulnerabilities(team, POKEMON_DB)
     cores = detect_cores(team, POKEMON_DB)
+    cycle_score = evaluate_cycle_score(team, POKEMON_DB)
+    survivals = estimate_survivability(team, POKEMON_DB)
+    tera_solutions = suggest_tera_solutions(team, POKEMON_DB)
+    review = tactical_review(team, POKEMON_DB)
 
     score_value = score_pack["score"]
     if score_value >= 80:
@@ -564,3 +572,74 @@ else:
 """,
         unsafe_allow_html=True,
     )
+
+    st.subheader("タクティカル・レビュー")
+    if not review["alerts"]:
+        st.markdown("<div class='insight-card good'>大きな警告はありません。戦術の完成度が高いです。</div>", unsafe_allow_html=True)
+    else:
+        alert_html = "".join([f"<span class='alert-badge'>{a}</span>" for a in review["alerts"]])
+        reason_html = "".join([f"<div class='insight-line'>{r}</div>" for r in review["reasons"]])
+        st.markdown(
+            f"""
+<div class="insight-card">
+  <div class="insight-title">プロ視点の警告</div>
+  <div class="insight-badges">{alert_html}</div>
+  {reason_html}
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    st.subheader("勝利へのシナリオ")
+    if review["wins"]:
+        wins_html = "".join([f"<div class='scenario-step'>• {w}</div>" for w in review["wins"]])
+        st.markdown(
+            f"""
+<div class="scenario-card">
+  <div class="insight-title">推奨ルート</div>
+  {wins_html}
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            "<div class='scenario-card'>起点作成役と勝ち筋の連携が不足しています。</div>",
+            unsafe_allow_html=True,
+        )
+
+    st.subheader("対面操作の評価")
+    pivots_text = ", ".join(cycle_score["pivot_names"]) if cycle_score["pivot_names"] else "なし"
+    cushions_text = ", ".join(cycle_score["cushions"]) if cycle_score["cushions"] else "なし"
+    st.markdown(
+        f"""
+<div class="insight-card">
+  <div class="insight-title">サイクル評価: {cycle_score["label"]}</div>
+  <div class="insight-line">入れ替え技: {pivots_text}</div>
+  <div class="insight-line">受け出し要員: {cushions_text}</div>
+  <div class="insight-meter">
+    <div class="insight-fill" style="width:{cycle_score["score"]}%;"></div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    if tera_solutions:
+        st.subheader("テラスタル解決案")
+        tera_rows = []
+        for s in tera_solutions:
+            cands = " / ".join(s["candidates"])
+            tera_rows.append(
+                f"<div class='tera-card'>弱点 {s['weak_type']} → {s['tera']}テラス提案 ({cands})</div>"
+            )
+        st.markdown("<div class='tera-grid'>" + "".join(tera_rows) + "</div>", unsafe_allow_html=True)
+
+    if survivals:
+        st.subheader("耐久ラインの論理判定")
+        verdicts = []
+        for row in survivals:
+            verdicts.append(
+                f"<div class='survive-card {row['verdict']}'>{row['name']} vs {row['threat']}: {row['verdict']}</div>"
+            )
+        st.markdown("<div class='survive-grid'>" + "".join(verdicts) + "</div>", unsafe_allow_html=True)

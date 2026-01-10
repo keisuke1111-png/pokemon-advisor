@@ -390,6 +390,104 @@ div[data-testid="stTabs"] button[aria-selected="true"] {
   box-shadow: 0 0 0 rgba(239, 68, 68, 0.2);
 }
 
+.insight-card {
+  border-radius: 18px;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--panel-border);
+  background: #FFFFFF;
+  box-shadow: var(--shadow);
+  margin-top: 0.6rem;
+}
+
+.insight-card.good {
+  background: #ECFDF3;
+  border-color: #BBF7D0;
+  color: #166534;
+  font-weight: 600;
+}
+
+.insight-title {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.insight-line {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin-bottom: 0.35rem;
+}
+
+.insight-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.insight-meter {
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.insight-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38BDF8, #2563EB);
+}
+
+.scenario-card {
+  border-radius: 18px;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--panel-border);
+  background: #F8FAFC;
+  box-shadow: var(--shadow);
+  margin-top: 0.6rem;
+}
+
+.scenario-step {
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.tera-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.6rem;
+}
+
+.tera-card {
+  border-radius: 14px;
+  padding: 0.8rem 1rem;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  font-weight: 600;
+  color: #1D4ED8;
+}
+
+.survive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.7rem;
+  margin-top: 0.6rem;
+}
+
+.survive-card {
+  border-radius: 14px;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--panel-border);
+  background: #FFFFFF;
+  font-weight: 600;
+}
+
+.survive-card.安定 { border-color: #86EFAC; background: #ECFDF3; color: #166534; }
+.survive-card.互角 { border-color: #CBD5E1; background: #F8FAFC; color: #334155; }
+.survive-card.要注意 { border-color: #FCD34D; background: #FFFBEB; color: #92400E; }
+.survive-card.危険 { border-color: #FCA5A5; background: #FEF2F2; color: #991B1B; }
+
 .analysis-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
