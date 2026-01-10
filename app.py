@@ -1,5 +1,5 @@
 # VSCodeターミナルで実行:
-# pip install streamlit pandas streamlit-gsheets-connection
+# pip install streamlit pandas
 # streamlit run app.py
 
 import json
@@ -12,7 +12,6 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from pokemon_data import POKEMON_DB
-# from streamlit_gsheets_connection import GSheetsConnection
 
 
 st.set_page_config(page_title="ポケモン構築サポーター", layout="wide", initial_sidebar_state="collapsed")
@@ -185,8 +184,8 @@ NATURE_EFFECTS = {
 }
 
 MASTER_JSON_PATH = Path(__file__).with_name("pokemon_master.json")
-SHEET_TEAMS = "teams"
-SHEET_BATTLES = "battle_logs"
+SAVED_TEAMS_PATH = Path(__file__).with_name("saved_teams.json")
+BATTLE_LOGS_PATH = Path(__file__).with_name("battle_logs.json")
 
 
 @st.cache_data(show_spinner=False)
@@ -201,75 +200,16 @@ def load_pokemon_db() -> dict:
     return db
 
 
-def read_sheet(worksheet: str) -> pd.DataFrame:
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    df = conn.read(worksheet=worksheet, ttl=0)
-    if df is None:
-        return pd.DataFrame()
-    return df
-
-
-def append_sheet_row(worksheet: str, row: dict) -> None:
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    df_new = pd.DataFrame([row])
-    try:
-        conn.append(worksheet=worksheet, data=df_new)
-    except Exception:
-        existing = read_sheet(worksheet)
-        merged = pd.concat([existing, df_new], ignore_index=True)
-        conn.update(worksheet=worksheet, data=merged)
-
-
-def normalize_list(value: str | list | None) -> list:
-    if value is None or value == "":
-        return []
-    if isinstance(value, list):
-        return value
-    if isinstance(value, str):
-        try:
-            return json.loads(value)
-        except Exception:
-            return [v for v in value.split(",") if v]
+def load_json_list(path: Path) -> list:
+    if path.exists():
+        with path.open("r", encoding="utf-8") as f:
+            return json.load(f)
     return []
 
 
-def load_saved_teams() -> list[dict]:
-    df = read_sheet(SHEET_TEAMS)
-    if df.empty:
-        return []
-    rows = df.to_dict(orient="records")
-    teams = []
-    for row in rows:
-        teams.append(
-            {
-                "name": row.get("name", "未命名"),
-                "members": normalize_list(row.get("members", "")),
-                "concept": row.get("concept", "対面構築"),
-                "memo": row.get("memo", ""),
-                "saved_at": row.get("saved_at", ""),
-            }
-        )
-    return teams
-
-
-def load_battle_logs() -> list[dict]:
-    df = read_sheet(SHEET_BATTLES)
-    if df.empty:
-        return []
-    rows = df.to_dict(orient="records")
-    logs = []
-    for row in rows:
-        logs.append(
-            {
-                "timestamp": row.get("timestamp", ""),
-                "result": row.get("result", ""),
-                "opponent_core": row.get("opponent_core", ""),
-                "picked": normalize_list(row.get("picked", "")),
-                "memo": row.get("memo", ""),
-                "team": normalize_list(row.get("team", "")),
-            }
-        )
-    return logs
+def save_json_list(path: Path, data: list) -> None:
+    with path.open("w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 
 @st.cache_data(show_spinner=False)
@@ -764,9 +704,9 @@ st.write("軸ポケモンを決め、補完枠や弱点をスマホで直感的�
 POKEMON_DB = load_pokemon_db()
 
 if "saved_teams" not in st.session_state:
-    st.session_state.saved_teams = load_saved_teams()
+    st.session_state.saved_teams = load_json_list(SAVED_TEAMS_PATH)
 if "battle_logs" not in st.session_state:
-    st.session_state.battle_logs = load_battle_logs()
+    st.session_state.battle_logs = load_json_list(BATTLE_LOGS_PATH)
 
 with st.sidebar:
     st.header("構築の軸を選択")
@@ -809,17 +749,7 @@ with st.sidebar:
             "saved_at": datetime.now().isoformat(timespec="seconds"),
         }
         st.session_state.saved_teams.append(team_data)
-        append_sheet_row(
-            SHEET_TEAMS,
-            {
-                "name": team_data["name"],
-                "members": json.dumps(team_data["members"], ensure_ascii=False),
-                "concept": team_data["concept"],
-                "memo": team_data["memo"],
-                "saved_at": team_data["saved_at"],
-            },
-        )
-        st.cache_data.clear()
+        save_json_list(SAVED_TEAMS_PATH, st.session_state.saved_teams)
         st.success("構築を保存しました。")
 
     if st.session_state.saved_teams:
@@ -1009,18 +939,7 @@ with tabs[4]:
             "team": team,
         }
         st.session_state.battle_logs.append(log)
-        append_sheet_row(
-            SHEET_BATTLES,
-            {
-                "timestamp": log["timestamp"],
-                "result": log["result"],
-                "opponent_core": log["opponent_core"],
-                "picked": json.dumps(log["picked"], ensure_ascii=False),
-                "memo": log["memo"],
-                "team": json.dumps(log["team"], ensure_ascii=False),
-            },
-        )
-        st.cache_data.clear()
+        save_json_list(BATTLE_LOGS_PATH, st.session_state.battle_logs)
         st.success("戦績を記録しました。")
 
     if st.session_state.battle_logs:
