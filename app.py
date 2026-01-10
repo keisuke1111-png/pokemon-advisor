@@ -34,6 +34,7 @@ from logic import (
     filter_pokemon_names,
     get_image_url,
     get_all_moves,
+    get_type_css_class,
     get_types,
     has_new_mechanic,
     meta_pressure,
@@ -233,6 +234,7 @@ with tabs[0]:
             stats = info["stats"]
             speed_actual = calc_stat_max(stats["S"], speed_nature, "S")
             card_title = f"{nickname} ({name})" if nickname else name
+            type_class = get_type_css_class(info)
             stat_rows = "".join(
                 [
                     render_stat_bar(stats["H"], "HP"),
@@ -244,10 +246,10 @@ with tabs[0]:
                 ]
             )
             card_html = (
-                f'<div class="pokemon-card">'
+                f'<div class="pokemon-card {type_class}">'
                 f'<div class="type-watermark">{watermark}</div>'
                 f'<div class="pokemon-card-header">'
-                f'  <img src="{image_url}" alt="{name}"/>'
+                f'  <div class="card-image"><img src="{image_url}" alt="{name}"/></div>'
                 f'  <div>'
                 f'    <div class="card-title">{card_title} {extra_badge}</div>'
                 f'    <div>{badges}</div>'

@@ -38,6 +38,12 @@ def load_pokemon_db() -> dict:
             db = json.load(f)
     else:
         db = POKEMON_DB
+    for idx, name in enumerate(db.keys(), start=1):
+        info = db[name]
+        if not info.get("dex_id") and not info.get("id"):
+            info["dex_id"] = idx
+        if not info.get("name"):
+            info["name"] = name
     for info in db.values():
         info.setdefault("new_mechanic_compatibility", False)
     return db
@@ -243,11 +249,41 @@ def get_image_url(info: dict) -> str:
         return info["sprite_url"]
     dex_id = info.get("dex_id") or info.get("id")
     if dex_id:
+        try:
+            dex_id = int(str(dex_id).strip().lstrip("#"))
+        except (TypeError, ValueError):
+            dex_id = None
+    if dex_id:
         return (
             "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"
             f"{dex_id}.png"
         )
     return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+
+
+def get_type_css_class(info: dict) -> str:
+    type_map = {
+        "ノーマル": "card-normal",
+        "ほのお": "card-fire",
+        "みず": "card-water",
+        "でんき": "card-electric",
+        "くさ": "card-grass",
+        "こおり": "card-ice",
+        "かくとう": "card-fighting",
+        "どく": "card-poison",
+        "じめん": "card-ground",
+        "ひこう": "card-flying",
+        "エスパー": "card-psychic",
+        "むし": "card-bug",
+        "いわ": "card-rock",
+        "ゴースト": "card-ghost",
+        "ドラゴン": "card-dragon",
+        "あく": "card-dark",
+        "はがね": "card-steel",
+        "フェアリー": "card-fairy",
+    }
+    primary = get_types(info)[0]
+    return type_map.get(primary, "card-normal")
 
 
 def default_team_slot() -> dict:

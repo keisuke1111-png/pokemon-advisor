@@ -16,6 +16,9 @@ def apply_custom_css() -> None:
   --muted: #64748B;
   --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
   --shadow-hover: 0 16px 36px rgba(15, 23, 42, 0.12);
+  --hero-glow-1: rgba(59, 130, 246, 0.16);
+  --hero-glow-2: rgba(34, 197, 94, 0.12);
+  --hero-glow-3: rgba(249, 115, 22, 0.12);
 }
 
 body {
@@ -49,10 +52,12 @@ h1, h2, h3, h4, h5 {
   border: 1px solid var(--panel-border);
   box-shadow: var(--shadow);
   margin-bottom: 0.9rem;
+  transform-style: preserve-3d;
+  perspective: 800px;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 .card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
   box-shadow: var(--shadow-hover);
   border-color: #CBD5E1;
 }
@@ -129,10 +134,27 @@ div.stButton > button:hover {
   border-radius: 24px;
   padding: 2.2rem 2rem;
   overflow: hidden;
-  background: var(--panel);
+  background: linear-gradient(120deg, var(--hero-glow-1), var(--hero-glow-2), var(--hero-glow-3));
+  background-size: 300% 300%;
   border: 1px solid var(--panel-border);
   box-shadow: var(--shadow);
   margin-bottom: 1.2rem;
+  isolation: isolate;
+  animation: heroShift 18s ease-in-out infinite;
+}
+
+.hero-section::before {
+  content: "";
+  position: absolute;
+  inset: -60% -40%;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.12), transparent 40%),
+    radial-gradient(circle at 80% 40%, rgba(56, 189, 248, 0.12), transparent 45%),
+    radial-gradient(circle at 30% 80%, rgba(34, 197, 94, 0.12), transparent 50%);
+  opacity: 0.7;
+  animation: patternDrift 28s linear infinite;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .hero-bg {
@@ -142,6 +164,8 @@ div.stButton > button:hover {
   background-position: center;
   opacity: 0.06;
   filter: saturate(110%);
+  animation: heroFloat 20s ease-in-out infinite;
+  z-index: 0;
 }
 
 .hero-title {
@@ -169,15 +193,17 @@ div.stButton > button:hover {
   border-radius: 20px;
   padding: 1rem 1.2rem;
   background: var(--panel);
-  border: 1px solid var(--panel-border);
+  border: 1px solid var(--type-color, var(--panel-border));
   box-shadow: var(--shadow);
+  transform-style: preserve-3d;
+  perspective: 900px;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .pokemon-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-hover);
-  border-color: #CBD5E1;
+  transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
+  box-shadow: var(--shadow-hover), 0 18px 38px var(--type-glow, rgba(148, 163, 184, 0.16));
+  border-color: var(--type-color, #CBD5E1);
 }
 
 .pokemon-card-header {
@@ -186,10 +212,20 @@ div.stButton > button:hover {
   gap: 0.8rem;
 }
 
-.pokemon-card img {
+.pokemon-card .card-image {
+  position: relative;
+  overflow: visible;
+}
+
+.pokemon-card .card-image img {
   width: 84px;
   height: 84px;
   object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.pokemon-card:hover .card-image img {
+  transform: translateY(-4px) scale(1.08);
 }
 
 .stat-bar {
@@ -233,6 +269,43 @@ div[data-testid="stTabs"] button[aria-selected="true"] {
   padding: 1rem 1.2rem;
   box-shadow: var(--shadow);
 }
+
+@keyframes heroShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes patternDrift {
+  0% { transform: translate3d(-2%, -2%, 0); }
+  50% { transform: translate3d(2%, 3%, 0); }
+  100% { transform: translate3d(-2%, -2%, 0); }
+}
+
+@keyframes heroFloat {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(1%, -1%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.card-normal { --type-color: #9CA3AF; --type-glow: rgba(156, 163, 175, 0.2); }
+.card-fire { --type-color: #F97316; --type-glow: rgba(249, 115, 22, 0.22); }
+.card-water { --type-color: #3B82F6; --type-glow: rgba(59, 130, 246, 0.22); }
+.card-electric { --type-color: #F59E0B; --type-glow: rgba(245, 158, 11, 0.22); }
+.card-grass { --type-color: #22C55E; --type-glow: rgba(34, 197, 94, 0.2); }
+.card-ice { --type-color: #38BDF8; --type-glow: rgba(56, 189, 248, 0.2); }
+.card-fighting { --type-color: #EF4444; --type-glow: rgba(239, 68, 68, 0.2); }
+.card-poison { --type-color: #A855F7; --type-glow: rgba(168, 85, 247, 0.2); }
+.card-ground { --type-color: #D97706; --type-glow: rgba(217, 119, 6, 0.2); }
+.card-flying { --type-color: #60A5FA; --type-glow: rgba(96, 165, 250, 0.2); }
+.card-psychic { --type-color: #EC4899; --type-glow: rgba(236, 72, 153, 0.2); }
+.card-bug { --type-color: #84CC16; --type-glow: rgba(132, 204, 22, 0.2); }
+.card-rock { --type-color: #B45309; --type-glow: rgba(180, 83, 9, 0.2); }
+.card-ghost { --type-color: #8B5CF6; --type-glow: rgba(139, 92, 246, 0.2); }
+.card-dragon { --type-color: #2563EB; --type-glow: rgba(37, 99, 235, 0.2); }
+.card-dark { --type-color: #64748B; --type-glow: rgba(100, 116, 139, 0.2); }
+.card-steel { --type-color: #94A3B8; --type-glow: rgba(148, 163, 184, 0.2); }
+.card-fairy { --type-color: #F472B6; --type-glow: rgba(244, 114, 182, 0.2); }
 </style>
 """,
         unsafe_allow_html=True,
