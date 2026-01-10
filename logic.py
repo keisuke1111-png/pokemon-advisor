@@ -218,7 +218,7 @@ def has_resist(team: list[str], attack_type: str, db: dict) -> bool:
 def render_type_badges(types: list[str]) -> str:
     return "".join(
         [
-            f'<span class="badge" style="background:{TYPE_COLORS.get(t, "#00d4ff")}">{t}</span>'
+            f'<span class="badge" style="background:{TYPE_COLORS.get(t, "#3B82F6")}">{t}</span>'
             for t in types
         ]
     )
@@ -521,7 +521,7 @@ def synergy_score(a: str, b: str, db: dict) -> int:
 def build_synergy_network(team: list[str], db: dict) -> go.Figure:
     if len(team) < 2:
         fig = go.Figure()
-        fig.update_layout(template="plotly_dark", height=380)
+        fig.update_layout(template="plotly_white", height=380)
         return fig
 
     positions = {}
@@ -550,7 +550,7 @@ def build_synergy_network(team: list[str], db: dict) -> go.Figure:
         node_y.append(y)
         node_text.append(name)
         primary_type = get_types(db[name])[0]
-        node_colors.append(TYPE_COLORS.get(primary_type, "#00d4ff"))
+        node_colors.append(TYPE_COLORS.get(primary_type, "#3B82F6"))
 
     fig = go.Figure()
     fig.add_trace(
@@ -558,7 +558,7 @@ def build_synergy_network(team: list[str], db: dict) -> go.Figure:
             x=edge_x,
             y=edge_y,
             mode="lines",
-            line=dict(color="rgba(0, 212, 255, 0.35)", width=1),
+            line=dict(color="rgba(100, 116, 139, 0.5)", width=1),
             hoverinfo="none",
         )
     )
@@ -572,18 +572,21 @@ def build_synergy_network(team: list[str], db: dict) -> go.Figure:
             marker=dict(
                 size=22,
                 color=node_colors,
-                line=dict(width=1, color="#0b0f1a"),
+                line=dict(width=1, color="#E2E8F0"),
                 opacity=0.95,
             ),
+            textfont=dict(color="#1E293B"),
             hoverinfo="text",
         )
     )
     fig.update_layout(
-        template="plotly_dark",
+        template="plotly_white",
         height=380,
         margin=dict(l=10, r=10, t=10, b=10),
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
     )
     return fig
 
@@ -593,11 +596,11 @@ def render_stat_bar(value: int, label: str) -> str:
     ratio = max(0, min(value, max_value)) / max_value
     percent = int(ratio * 100)
     if ratio >= 0.8:
-        color = "linear-gradient(90deg, #7dd3fc, #f8fafc)"
+        color = "linear-gradient(90deg, #60A5FA, #93C5FD)"
     elif ratio >= 0.5:
-        color = "linear-gradient(90deg, #38bdf8, #7dd3fc)"
+        color = "linear-gradient(90deg, #3B82F6, #60A5FA)"
     else:
-        color = "linear-gradient(90deg, #0ea5e9, #38bdf8)"
+        color = "linear-gradient(90deg, #2563EB, #3B82F6)"
     return (
         f"<div class='stat-bar-label'>{label} {value}</div>"
         f"<div class='stat-bar'><div class='stat-bar-fill' style='width:{percent}%; background:{color};'></div></div>"
@@ -605,21 +608,33 @@ def render_stat_bar(value: int, label: str) -> str:
 
 
 def table_to_plotly(df: pd.DataFrame, title: str) -> go.Figure:
-    header_color = "#0b1220"
-    cells_color = "#111827"
+    header_color = "#F1F5F9"
+    cells_color = "#FFFFFF"
     fig = go.Figure(
         data=[
             go.Table(
-                header=dict(values=list(df.columns), fill_color=header_color, font=dict(color="#e5e7eb")),
-                cells=dict(values=[df[col].tolist() for col in df.columns], fill_color=cells_color, font=dict(color="#e5e7eb")),
+                header=dict(
+                    values=list(df.columns),
+                    fill_color=header_color,
+                    font=dict(color="#1E293B", size=12),
+                    line=dict(color="#E2E8F0"),
+                ),
+                cells=dict(
+                    values=[df[col].tolist() for col in df.columns],
+                    fill_color=cells_color,
+                    font=dict(color="#334155", size=12),
+                    line=dict(color="#E2E8F0"),
+                ),
             )
         ]
     )
     fig.update_layout(
-        template="plotly_dark",
+        template="plotly_white",
         height=360,
         margin=dict(l=10, r=10, t=20, b=10),
         title=title,
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
     )
     return fig
 

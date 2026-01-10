@@ -5,36 +5,39 @@ def apply_custom_css() -> None:
     st.markdown(
         """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #0b0f1a;
-  --panel: rgba(11, 18, 32, 0.72);
-  --panel-border: rgba(0, 212, 255, 0.18);
-  --accent: #00d4ff;
-  --text: #e6f1ff;
-  --muted: #94a3b8;
-  --glass: rgba(255, 255, 255, 0.06);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --bg: #F8FAFC;
+  --panel: #FFFFFF;
+  --panel-border: #E2E8F0;
+  --accent: #3B82F6;
+  --text: #1E293B;
+  --muted: #64748B;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-hover: 0 16px 36px rgba(15, 23, 42, 0.12);
 }
 
 body {
-  background: radial-gradient(circle at top, #0b1229 0%, #020617 55%, #020617 100%);
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
   color: var(--text);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', 'Noto Sans JP', sans-serif;
 }
-.main { padding-top: 0.5rem; }
-section[data-testid="stSidebar"] { background: #0a0e17; }
+.main { padding-top: 0.75rem; }
+section[data-testid="stSidebar"] {
+  background: #F8FAFC;
+  border-right: 1px solid var(--panel-border);
+}
 
 h1, h2, h3, h4, h5 {
   color: var(--text);
-  font-family: 'Orbitron', sans-serif;
-  letter-spacing: 0.04em;
+  font-family: 'Inter', 'Noto Sans JP', sans-serif;
+  letter-spacing: 0.01em;
 }
 
 .divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  background: linear-gradient(90deg, transparent, #CBD5F5, transparent);
   margin: 0.75rem 0;
 }
 
@@ -44,21 +47,20 @@ h1, h2, h3, h4, h5 {
   border-radius: 16px;
   background: var(--panel);
   border: 1px solid var(--panel-border);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
   margin-bottom: 0.9rem;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0, 212, 255, 0.16);
-  border-color: rgba(0, 212, 255, 0.5);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: #CBD5E1;
 }
 
 .card-title {
   font-size: 1.05rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .card-meta {
@@ -70,8 +72,8 @@ h1, h2, h3, h4, h5 {
   width: 96px;
   height: 96px;
   border-radius: 12px;
-  background: rgba(0, 212, 255, 0.06);
-  border: 1px solid rgba(0, 212, 255, 0.25);
+  background: #F1F5F9;
+  border: 1px solid var(--panel-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,18 +91,18 @@ h1, h2, h3, h4, h5 {
   right: 12px;
   bottom: 6px;
   font-size: 3rem;
-  opacity: 0.06;
+  opacity: 0.08;
 }
 
 .badge {
   display: inline-block;
   padding: 0.18rem 0.55rem;
   border-radius: 999px;
-  color: #0b0f1a;
+  color: #FFFFFF;
   font-size: 0.78rem;
   font-weight: 700;
   margin-right: 0.25rem;
-  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.12);
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.08);
 }
 
 div[data-testid="stSelectbox"] > div, div[data-testid="stMultiSelect"] > div {
@@ -109,22 +111,27 @@ div[data-testid="stSelectbox"] > div, div[data-testid="stMultiSelect"] > div {
 
 div.stButton > button {
   font-size: 1.05rem;
-  padding: 0.75rem 1.1rem;
+  padding: 0.7rem 1.1rem;
   border-radius: 12px;
-  border: 1px solid rgba(0, 212, 255, 0.4);
-  background: linear-gradient(180deg, rgba(0, 212, 255, 0.18), rgba(0, 212, 255, 0.06));
-  color: var(--text);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #FFFFFF;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
+}
+
+div.stButton > button:hover {
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.25);
+  transform: translateY(-1px);
 }
 
 .hero-section {
   position: relative;
-  border-radius: 28px;
-  padding: 2.5rem 2rem;
+  border-radius: 24px;
+  padding: 2.2rem 2rem;
   overflow: hidden;
-  background: rgba(2, 6, 23, 0.65);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(20px);
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow);
   margin-bottom: 1.2rem;
 }
 
@@ -133,13 +140,13 @@ div.stButton > button {
   inset: -10%;
   background-size: cover;
   background-position: center;
-  opacity: 0.22;
-  filter: saturate(120%) blur(0px);
+  opacity: 0.06;
+  filter: saturate(110%);
 }
 
 .hero-title {
   position: relative;
-  font-size: 2.2rem;
+  font-size: 2.1rem;
   z-index: 1;
 }
 
@@ -150,29 +157,27 @@ div.stButton > button {
 }
 
 .glass-panel {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
   border-radius: 20px;
   padding: 1rem 1.2rem;
-  backdrop-filter: blur(20px);
-  box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.08);
+  box-shadow: var(--shadow);
 }
 
 .pokemon-card {
   position: relative;
-  border-radius: 24px;
+  border-radius: 20px;
   padding: 1rem 1.2rem;
-  background: rgba(8, 15, 34, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(20px);
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .pokemon-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 50px rgba(0, 212, 255, 0.25);
-  border-color: rgba(0, 212, 255, 0.55);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: #CBD5E1;
 }
 
 .pokemon-card-header {
@@ -191,15 +196,13 @@ div.stButton > button {
   position: relative;
   height: 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: #E2E8F0;
   overflow: hidden;
 }
 
 .stat-bar-fill {
   height: 100%;
   border-radius: 999px;
-  filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.45));
-  animation: statGlow 2.6s ease-in-out infinite;
 }
 
 .stat-bar-label {
@@ -208,32 +211,27 @@ div.stButton > button {
   margin-bottom: 0.2rem;
 }
 
-@keyframes statGlow {
-  0% { opacity: 0.65; }
-  50% { opacity: 1; }
-  100% { opacity: 0.75; }
-}
-
 div[data-testid="stTabs"] button {
-  background: rgba(15, 23, 42, 0.6) !important;
+  background: #F1F5F9 !important;
   color: var(--muted) !important;
   border-radius: 999px !important;
   padding: 0.5rem 1.2rem !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--panel-border) !important;
 }
 
 div[data-testid="stTabs"] button[aria-selected="true"] {
-  color: #e6f1ff !important;
-  border-color: rgba(0, 212, 255, 0.7) !important;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.45);
+  color: var(--text) !important;
+  border-color: #93C5FD !important;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.18);
+  background: #FFFFFF !important;
 }
 
 .analysis-panel {
-  background: rgba(8, 15, 34, 0.72);
-  border: 1px solid rgba(0, 212, 255, 0.25);
-  border-radius: 20px;
+  background: #F8FAFC;
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
   padding: 1rem 1.2rem;
-  box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.1);
+  box-shadow: var(--shadow);
 }
 </style>
 """,

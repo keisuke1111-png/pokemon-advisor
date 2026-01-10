@@ -99,8 +99,8 @@ team = [slot["pokemon"] for slot in team_slots if slot["pokemon"] != NO_SELECTIO
 
 hero_name = team[0] if team else None
 hero_image = get_image_url(POKEMON_DB[hero_name]) if hero_name else ""
-hero_title = "Pokemon Build Matrix"
-hero_sub = "Cyber-Glassmorphism Dashboard · VGC / Singles"
+hero_title = "Pokemon Build Studio"
+hero_sub = "プロフェッショナル・ライトモード構築ダッシュボード"
 hero_bg = f"background-image: url('{hero_image}');" if hero_image else ""
 st.markdown(
     f"""
@@ -222,7 +222,7 @@ with tabs[0]:
                 continue
             info = POKEMON_DB[name]
             badges = render_type_badges(get_types(info))
-            extra_badge = " <span class='badge' style='background:#00d4ff;'>NEW</span>" if has_new_mechanic(info) else ""
+            extra_badge = " <span class='badge' style='background:#3B82F6;'>NEW</span>" if has_new_mechanic(info) else ""
             watermark = TYPE_EMOJI.get(get_types(info)[0], "")
             image_url = get_image_url(info)
             nickname = slot["nickname"].strip()
