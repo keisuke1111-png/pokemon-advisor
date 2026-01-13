@@ -29,6 +29,25 @@ def select_major_moves(moves: List[Dict[str, Any]], limit: int = 8) -> List[str]
     return picked
 
 
+def fetch_japanese_name(species_url: str) -> str:
+    species = fetch_json(species_url)
+    names = species.get("names", [])
+    for entry in names:
+        if entry["language"]["name"] == "ja-Hrkt":
+            return entry["name"]
+    for entry in names:
+        if entry["language"]["name"] == "ja":
+            return entry["name"]
+    return ""
+
+
+def extract_image_url(detail: Dict[str, Any]) -> str:
+    sprites = detail.get("sprites", {})
+    other = sprites.get("other", {})
+    official = other.get("official-artwork", {})
+    return official.get("front_default") or sprites.get("front_default") or ""
+
+
 def convert_pokemon(detail: Dict[str, Any]) -> Dict[str, Any]:
     types = [t["type"]["name"] for t in detail["types"]]
     ability_entries = detail["abilities"]
@@ -37,12 +56,16 @@ def convert_pokemon(detail: Dict[str, Any]) -> Dict[str, Any]:
         (a["ability"]["name"] for a in ability_entries if a["is_hidden"]),
         "",
     )
+    japanese_name = fetch_japanese_name(detail["species"]["url"])
+    image_url = extract_image_url(detail)
     stats_map = {s["stat"]["name"]: s["base_stat"] for s in detail["stats"]}
     total = sum(stats_map.values())
 
     return {
         "id": detail["id"],
         "name": detail["name"],
+        "japanese_name": japanese_name,
+        "image_url": image_url,
         "type1": types[0] if types else "",
         "type2": types[1] if len(types) > 1 else "",
         "ability1": abilities[0] if len(abilities) > 0 else "",

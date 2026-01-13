@@ -16,10 +16,13 @@ def load_pokemon_data(path: str) -> pd.DataFrame:
 
     records: List[dict] = []
     for entry in raw:
+        display_name = entry.get("japanese_name") or entry.get("name", "")
         records.append(
             {
                 "No.": entry.get("id"),
-                "名前": entry.get("name", ""),
+                "名前": display_name,
+                "英名": entry.get("name", ""),
+                "画像": entry.get("image_url", ""),
                 "タイプ1": entry.get("type1", ""),
                 "タイプ2": entry.get("type2", ""),
                 "特性1": entry.get("ability1", ""),
@@ -43,6 +46,7 @@ def build_search_text(row: pd.Series) -> str:
     return " ".join(
         [
             str(row.get("名前", "")),
+            str(row.get("英名", "")),
             str(row.get("特性1", "")),
             str(row.get("特性2", "")),
             str(row.get("隠れ特性", "")),
@@ -119,4 +123,28 @@ else:
     start = (page - 1) * page_size
     end = start + page_size
     display = filtered.sort_values("No.").iloc[start:end]
-    st.dataframe(display, use_container_width=True, hide_index=True)
+    columns = [
+        "画像",
+        "No.",
+        "名前",
+        "タイプ1",
+        "タイプ2",
+        "特性1",
+        "特性2",
+        "隠れ特性",
+        "H",
+        "A",
+        "B",
+        "C",
+        "D",
+        "S",
+        "合計",
+    ]
+    st.dataframe(
+        display[columns],
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "画像": st.column_config.ImageColumn("画像", width="small"),
+        },
+    )
