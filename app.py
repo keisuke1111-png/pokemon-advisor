@@ -1,4 +1,5 @@
 import json
+import os
 from typing import List
 
 import pandas as pd
@@ -10,24 +11,29 @@ STAT_LABELS = {"hp": "H", "atk": "A", "def": "B", "spa": "C", "spd": "D", "spe":
 
 
 @st.cache_data(show_spinner=False)
-def load_pokemon_data(path: str) -> pd.DataFrame:
+def load_pokemon_data(path: str, version: float) -> pd.DataFrame:
     with open(path, "r", encoding="utf-8") as file:
         raw = json.load(file)
 
     records: List[dict] = []
     for entry in raw:
         display_name = entry.get("japanese_name") or entry.get("name", "")
+        type1 = entry.get("type1_ja") or entry.get("type1", "")
+        type2 = entry.get("type2_ja") or entry.get("type2", "")
+        ability1 = entry.get("ability1_ja") or entry.get("ability1", "")
+        ability2 = entry.get("ability2_ja") or entry.get("ability2", "")
+        hidden = entry.get("hidden_ability_ja") or entry.get("hidden_ability", "")
         records.append(
             {
                 "No.": entry.get("id"),
                 "名前": display_name,
                 "英名": entry.get("name", ""),
                 "画像": entry.get("image_url", ""),
-                "タイプ1": entry.get("type1", ""),
-                "タイプ2": entry.get("type2", ""),
-                "特性1": entry.get("ability1", ""),
-                "特性2": entry.get("ability2", ""),
-                "隠れ特性": entry.get("hidden_ability", ""),
+                "タイプ1": type1,
+                "タイプ2": type2,
+                "特性1": ability1,
+                "特性2": ability2,
+                "隠れ特性": hidden,
                 "H": entry.get("hp", 0),
                 "A": entry.get("atk", 0),
                 "B": entry.get("def", 0),
@@ -35,7 +41,6 @@ def load_pokemon_data(path: str) -> pd.DataFrame:
                 "D": entry.get("spd", 0),
                 "S": entry.get("spe", 0),
                 "合計": entry.get("total", 0),
-                "技": " / ".join(entry.get("moves", [])),
             }
         )
 
@@ -50,7 +55,6 @@ def build_search_text(row: pd.Series) -> str:
             str(row.get("特性1", "")),
             str(row.get("特性2", "")),
             str(row.get("隠れ特性", "")),
-            str(row.get("技", "")),
         ]
     ).lower()
 
@@ -59,7 +63,8 @@ st.set_page_config(page_title="ポケモン大図鑑", layout="wide")
 st.title("ポケモン大図鑑（全データ版）")
 st.caption("タイプ・種族値・特性・技をAND検索して高速フィルタリング")
 
-data = load_pokemon_data(DATA_PATH)
+data_version = os.path.getmtime(DATA_PATH)
+data = load_pokemon_data(DATA_PATH, data_version)
 
 all_types = sorted(
     set(data["タイプ1"].dropna().tolist() + data["タイプ2"].dropna().tolist())
