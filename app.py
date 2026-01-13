@@ -1,167 +1,122 @@
-import streamlit as st
+import json
+from typing import List
+
 import pandas as pd
+import streamlit as st
 
-POKEMON_LIST = [
-    {
-        "id": 149,
-        "name": "カイリュー",
-        "types": ["ドラゴン", "ひこう"],
-        "abilities": ["マルチスケイル", "せいしんりょく"],
-        "moves": ["しんそく", "りゅうのまい", "げきりん", "じしん"],
-        "stats": {"hp": 91, "atk": 134, "def": 95, "spa": 100, "spd": 100, "spe": 80},
-    },
-    {
-        "id": 987,
-        "name": "ハバタクカミ",
-        "types": ["ゴースト", "フェアリー"],
-        "abilities": ["こだいかっせい"],
-        "moves": ["ムーンフォース", "シャドーボール", "マジカルフレイム", "みがわり"],
-        "stats": {"hp": 55, "atk": 55, "def": 55, "spa": 135, "spd": 135, "spe": 135},
-    },
-    {
-        "id": 892,
-        "name": "ウーラオス(れんげきのかた)",
-        "types": ["かくとう", "みず"],
-        "abilities": ["ふかしのこぶし"],
-        "moves": ["すいりゅうれんだ", "インファイト", "アクアジェット", "つるぎのまい"],
-        "stats": {"hp": 100, "atk": 130, "def": 100, "spa": 63, "spd": 60, "spe": 97},
-    },
-    {
-        "id": 1002,
-        "name": "パオジアン",
-        "types": ["あく", "こおり"],
-        "abilities": ["わざわいのつるぎ"],
-        "moves": ["つららおとし", "かみくだく", "せいなるつるぎ", "ふいうち"],
-        "stats": {"hp": 80, "atk": 120, "def": 80, "spa": 90, "spd": 65, "spe": 135},
-    },
-    {
-        "id": 1000,
-        "name": "サーフゴー",
-        "types": ["ゴースト", "はがね"],
-        "abilities": ["おうごんのからだ"],
-        "moves": ["ゴールドラッシュ", "シャドーボール", "わるだくみ", "きあいだま"],
-        "stats": {"hp": 87, "atk": 60, "def": 95, "spa": 133, "spd": 91, "spe": 84},
-    },
-    {
-        "id": 645,
-        "name": "ランドロス(れいじゅうフォルム)",
-        "types": ["じめん", "ひこう"],
-        "abilities": ["いかく"],
-        "moves": ["じしん", "とんぼがえり", "ストーンエッジ", "つるぎのまい"],
-        "stats": {"hp": 89, "atk": 145, "def": 90, "spa": 105, "spd": 80, "spe": 91},
-    },
-    {
-        "id": 1003,
-        "name": "ディンルー",
-        "types": ["あく", "じめん"],
-        "abilities": ["わざわいのうつわ"],
-        "moves": ["じしん", "まきびし", "ステルスロック", "じわれ"],
-        "stats": {"hp": 155, "atk": 110, "def": 125, "spa": 45, "spd": 80, "spe": 50},
-    },
-    {
-        "id": 991,
-        "name": "テツノツツミ",
-        "types": ["こおり", "みず"],
-        "abilities": ["クォークチャージ"],
-        "moves": ["フリーズドライ", "ハイドロポンプ", "こおりのつぶて", "みがわり"],
-        "stats": {"hp": 56, "atk": 80, "def": 114, "spa": 124, "spd": 60, "spe": 136},
-    },
-    {
-        "id": 445,
-        "name": "ガブリアス",
-        "types": ["ドラゴン", "じめん"],
-        "abilities": ["すながくれ", "さめはだ"],
-        "moves": ["じしん", "げきりん", "アイアンヘッド", "ほのおのキバ"],
-        "stats": {"hp": 108, "atk": 130, "def": 95, "spa": 80, "spd": 85, "spe": 102},
-    },
-    {
-        "id": 1004,
-        "name": "イーユイ",
-        "types": ["あく", "ほのお"],
-        "abilities": ["わざわいのたま"],
-        "moves": ["かえんほうしゃ", "あくのはどう", "おにび", "わるだくみ"],
-        "stats": {"hp": 55, "atk": 80, "def": 80, "spa": 135, "spd": 120, "spe": 100},
-    },
-]
-
-ALL_TYPES = [
-    "ノーマル",
-    "ほのお",
-    "みず",
-    "でんき",
-    "くさ",
-    "こおり",
-    "かくとう",
-    "どく",
-    "じめん",
-    "ひこう",
-    "エスパー",
-    "むし",
-    "いわ",
-    "ゴースト",
-    "ドラゴン",
-    "あく",
-    "はがね",
-    "フェアリー",
-]
-
+DATA_PATH = "pokemon_data.json"
 STAT_KEYS = ["hp", "atk", "def", "spa", "spd", "spe"]
 STAT_LABELS = {"hp": "H", "atk": "A", "def": "B", "spa": "C", "spd": "D", "spe": "S"}
 
-st.set_page_config(page_title="ポケモン大図鑑", layout="wide")
 
-st.title("ポケモン大図鑑（高性能検索エンジン）")
-st.caption("種族値・タイプ・特性・技でリアルタイムに絞り込み")
+@st.cache_data(show_spinner=False)
+def load_pokemon_data(path: str) -> pd.DataFrame:
+    with open(path, "r", encoding="utf-8") as file:
+        raw = json.load(file)
+
+    records: List[dict] = []
+    for entry in raw:
+        records.append(
+            {
+                "No.": entry.get("id"),
+                "名前": entry.get("name", ""),
+                "タイプ1": entry.get("type1", ""),
+                "タイプ2": entry.get("type2", ""),
+                "特性1": entry.get("ability1", ""),
+                "特性2": entry.get("ability2", ""),
+                "隠れ特性": entry.get("hidden_ability", ""),
+                "H": entry.get("hp", 0),
+                "A": entry.get("atk", 0),
+                "B": entry.get("def", 0),
+                "C": entry.get("spa", 0),
+                "D": entry.get("spd", 0),
+                "S": entry.get("spe", 0),
+                "合計": entry.get("total", 0),
+                "技": " / ".join(entry.get("moves", [])),
+            }
+        )
+
+    return pd.DataFrame(records)
+
+
+def build_search_text(row: pd.Series) -> str:
+    return " ".join(
+        [
+            str(row.get("名前", "")),
+            str(row.get("特性1", "")),
+            str(row.get("特性2", "")),
+            str(row.get("隠れ特性", "")),
+            str(row.get("技", "")),
+        ]
+    ).lower()
+
+
+st.set_page_config(page_title="ポケモン大図鑑", layout="wide")
+st.title("ポケモン大図鑑（全データ版）")
+st.caption("タイプ・種族値・特性・技をAND検索して高速フィルタリング")
+
+data = load_pokemon_data(DATA_PATH)
+
+all_types = sorted(
+    set(data["タイプ1"].dropna().tolist() + data["タイプ2"].dropna().tolist())
+)
+all_types = [t for t in all_types if t]
 
 with st.sidebar:
     st.header("検索フィルター")
-    search_term = st.text_input("名前 / 技 / 特性")
-    selected_types = st.multiselect("タイプ", ALL_TYPES)
-    st.subheader("種族値（最小値）")
-    min_stats = {}
+    search_term = st.text_input("名前 / 技 / 特性（スペース区切りで複数）")
+
+    st.subheader("タイプ")
+    type1 = st.selectbox("タイプ1", ["指定なし"] + all_types)
+    type2 = st.selectbox("タイプ2", ["指定なし"] + all_types)
+
+    st.subheader("種族値（以上 / 以下）")
+    stat_ranges = {}
     for key in STAT_KEYS:
-        min_stats[key] = st.slider(
-            f"{STAT_LABELS[key]}", min_value=40, max_value=200, value=40
+        label = STAT_LABELS[key]
+        stat_ranges[key] = st.slider(
+            f"{label}",
+            min_value=1,
+            max_value=255,
+            value=(1, 255),
         )
 
-filtered = []
-needle = search_term.strip().lower()
+    total_range = st.slider("合計値", min_value=200, max_value=780, value=(200, 780))
 
-for pokemon in POKEMON_LIST:
-    matches_text = (
-        not needle
-        or any(
-            needle in entry.lower()
-            for entry in [pokemon["name"], *pokemon["abilities"], *pokemon["moves"]]
-        )
-    )
-    matches_types = not selected_types or all(
-        t in pokemon["types"] for t in selected_types
-    )
-    matches_stats = all(
-        pokemon["stats"][key] >= min_stats[key] for key in STAT_KEYS
-    )
-    if matches_text and matches_types and matches_stats:
-        total = sum(pokemon["stats"][key] for key in STAT_KEYS)
-        filtered.append({
-            "No.": pokemon["id"],
-            "名前": pokemon["name"],
-            "タイプ": " / ".join(pokemon["types"]),
-            "特性": " / ".join(pokemon["abilities"]),
-            "技": " / ".join(pokemon["moves"]),
-            "H": pokemon["stats"]["hp"],
-            "A": pokemon["stats"]["atk"],
-            "B": pokemon["stats"]["def"],
-            "C": pokemon["stats"]["spa"],
-            "D": pokemon["stats"]["spd"],
-            "S": pokemon["stats"]["spe"],
-            "BST": total,
-        })
+    page_size = st.selectbox("表示件数", [25, 50, 100, 200], index=1)
 
-st.subheader(f"検索結果: {len(filtered)} 匹")
+filtered = data.copy()
 
-if filtered:
-    df = pd.DataFrame(filtered)
-    st.dataframe(df, use_container_width=True, hide_index=True)
-else:
+if type1 != "指定なし":
+    filtered = filtered[(filtered["タイプ1"] == type1) | (filtered["タイプ2"] == type1)]
+
+if type2 != "指定なし":
+    filtered = filtered[(filtered["タイプ1"] == type2) | (filtered["タイプ2"] == type2)]
+
+for key in STAT_KEYS:
+    label = STAT_LABELS[key]
+    minimum, maximum = stat_ranges[key]
+    filtered = filtered[(filtered[label] >= minimum) & (filtered[label] <= maximum)]
+
+filtered = filtered[
+    (filtered["合計"] >= total_range[0]) & (filtered["合計"] <= total_range[1])
+]
+
+terms = [t for t in search_term.strip().lower().split() if t]
+if terms:
+    search_text = filtered.apply(build_search_text, axis=1)
+    mask = search_text.apply(lambda text: all(term in text for term in terms))
+    filtered = filtered[mask]
+
+total_results = len(filtered)
+st.subheader(f"検索結果: {total_results} 匹")
+
+if total_results == 0:
     st.info("条件に一致するポケモンが見つかりませんでした。")
+else:
+    total_pages = max((total_results - 1) // page_size + 1, 1)
+    page = st.number_input("ページ", min_value=1, max_value=total_pages, value=1)
+    start = (page - 1) * page_size
+    end = start + page_size
+    display = filtered.sort_values("No.").iloc[start:end]
+    st.dataframe(display, use_container_width=True, hide_index=True)
