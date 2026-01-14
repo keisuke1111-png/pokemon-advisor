@@ -65,6 +65,52 @@ def build_search_text(row: pd.Series) -> str:
 st.set_page_config(page_title="ポケモン大図鑑", layout="wide")
 st.title("ポケモン大図鑑（全データ版）")
 st.caption("タイプ・種族値・特性・技をAND検索して高速フィルタリング")
+st.markdown(
+    """
+    <style>
+    .pokedex-card {
+        background: #ffffff;
+        color: #111827;
+        border-radius: 14px;
+        padding: 12px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+        margin-bottom: 12px;
+    }
+    .pokedex-card h3 {
+        font-size: 16px;
+        margin: 6px 0 4px 0;
+    }
+    .pokedex-card .meta {
+        font-size: 12px;
+        color: #475569;
+        margin-bottom: 6px;
+    }
+    .pokedex-card .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px 8px;
+        font-size: 12px;
+    }
+    .pokedex-card .tag {
+        display: inline-block;
+        background: #eef2ff;
+        color: #3730a3;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        margin-right: 4px;
+    }
+    .pokedex-card img {
+        width: 100%;
+        max-width: 140px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 data_version = os.path.getmtime(DATA_PATH)
 data = load_pokemon_data(DATA_PATH, data_version)
@@ -170,28 +216,34 @@ else:
     end_idx = start_idx + items_per_page
     display = filtered.sort_values("No.").iloc[start_idx:end_idx]
 
-    columns = [
-        "画像",
-        "No.",
-        "名前",
-        "タイプ1",
-        "タイプ2",
-        "特性1",
-        "特性2",
-        "隠れ特性",
-        "H",
-        "A",
-        "B",
-        "C",
-        "D",
-        "S",
-        "合計",
-    ]
-    st.dataframe(
-        display[columns],
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "画像": st.column_config.ImageColumn("画像", width="small"),
-        },
-    )
+    cols = st.columns(5)
+    for i, row in enumerate(display.itertuples(index=False)):
+        with cols[i % 5]:
+            type_tags = " ".join(
+                [
+                    f'<span class="tag">{t}</span>'
+                    for t in [row.タイプ1, row.タイプ2]
+                    if t
+                ]
+            )
+            st.markdown(
+                f"""
+                <div class="pokedex-card">
+                    <div class="meta">No.{row._0}</div>
+                    <img src="{row.画像}" alt="{row.名前}" />
+                    <h3>{row.名前}</h3>
+                    <div class="meta">{type_tags}</div>
+                    <div class="meta">特性: {row.特性1} / {row.特性2} / {row.隠れ特性}</div>
+                    <div class="stats">
+                        <div>H {row.H}</div>
+                        <div>A {row.A}</div>
+                        <div>B {row.B}</div>
+                        <div>C {row.C}</div>
+                        <div>D {row.D}</div>
+                        <div>S {row.S}</div>
+                    </div>
+                    <div class="meta">BST {row.合計}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
