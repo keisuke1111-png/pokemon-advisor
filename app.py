@@ -107,8 +107,6 @@ with st.sidebar:
         total_max = st.number_input("BST Max", min_value=0, max_value=780, value=780)
     total_range = (total_min, total_max)
 
-    page_size = st.selectbox("表示件数", [100, 200, 500], index=0)
-
 # フィルタの変更を検知してページを1に戻す（空ページ対策）
 filter_signature = (
     search_term.strip().lower(),
@@ -117,7 +115,7 @@ filter_signature = (
     total_range,
 )
 if st.session_state.get("filter_signature") != filter_signature:
-    st.session_state["page"] = 1
+    st.session_state["current_page"] = 1
     st.session_state["filter_signature"] = filter_signature
 
 filtered = data.copy()
@@ -158,18 +156,19 @@ st.subheader(f"検索結果: {total_results} 匹")
 if total_results == 0:
     st.info("条件に一致するポケモンが見つかりませんでした。")
 else:
-    if not search_term and not selected_types:
-        filtered = filtered.sort_values("No.").head(page_size)
-
-    total_pages = max((total_results - 1) // page_size + 1, 1)
+    items_per_page = 100
+    total_pages = max((total_results - 1) // items_per_page + 1, 1)
     # 最大ページを超えないようにガード（空ページ対策）
-    st.session_state["page"] = max(
-        1, min(st.session_state.get("page", 1), total_pages)
+    st.session_state["current_page"] = max(
+        1, min(st.session_state.get("current_page", 1), total_pages)
     )
-    page = st.number_input("ページ", min_value=1, max_value=total_pages, key="page")
-    start = (page - 1) * page_size
-    end = start + page_size
-    display = filtered.sort_values("No.").iloc[start:end]
+    page = st.number_input(
+        "ページ", min_value=1, max_value=total_pages, key="current_page"
+    )
+    # ページ番号に応じてスライス（全件から正しい範囲を抽出）
+    start_idx = (page - 1) * items_per_page
+    end_idx = start_idx + items_per_page
+    display = filtered.sort_values("No.").iloc[start_idx:end_idx]
 
     columns = [
         "画像",
