@@ -82,32 +82,22 @@ with st.sidebar:
     st.subheader("タイプ")
     selected_types = st.multiselect("タイプ（最大2つ）", all_types)
 
-    st.subheader("種族値（Min / Max）")
-    stat_ranges = {}
-    stat_pairs = [
-        ("H", "hp"),
-        ("A", "atk"),
-        ("B", "def"),
-        ("C", "spa"),
-        ("D", "spd"),
-        ("S", "spe"),
-    ]
-    for idx in range(0, len(stat_pairs), 2):
-        left_label, left_key = stat_pairs[idx]
-        right = stat_pairs[idx + 1] if idx + 1 < len(stat_pairs) else None
-        cols = st.columns(4 if right else 2)
-        with cols[0]:
-            left_min = st.number_input(f"{left_label} Min", min_value=0, max_value=255, value=0)
-        with cols[1]:
-            left_max = st.number_input(f"{left_label} Max", min_value=0, max_value=255, value=255)
-        stat_ranges[left_key] = (left_min, left_max)
-        if right:
-            right_label, right_key = right
-            with cols[2]:
-                right_min = st.number_input(f"{right_label} Min", min_value=0, max_value=255, value=0)
-            with cols[3]:
-                right_max = st.number_input(f"{right_label} Max", min_value=0, max_value=255, value=255)
-            stat_ranges[right_key] = (right_min, right_max)
+    st.subheader("種族値（Min）")
+    stat_mins = {}
+    row1 = st.columns(3)
+    row2 = st.columns(3)
+    with row1[0]:
+        stat_mins["hp"] = st.number_input("H Min", min_value=0, max_value=255, value=0)
+    with row1[1]:
+        stat_mins["atk"] = st.number_input("A Min", min_value=0, max_value=255, value=0)
+    with row1[2]:
+        stat_mins["def"] = st.number_input("B Min", min_value=0, max_value=255, value=0)
+    with row2[0]:
+        stat_mins["spa"] = st.number_input("C Min", min_value=0, max_value=255, value=0)
+    with row2[1]:
+        stat_mins["spd"] = st.number_input("D Min", min_value=0, max_value=255, value=0)
+    with row2[2]:
+        stat_mins["spe"] = st.number_input("S Min", min_value=0, max_value=255, value=0)
 
     st.subheader("合計値(BST)")
     total_cols = st.columns(2)
@@ -118,6 +108,17 @@ with st.sidebar:
     total_range = (total_min, total_max)
 
     page_size = st.selectbox("表示件数", [100, 200, 500], index=0)
+
+# フィルタの変更を検知してページを1に戻す（空ページ対策）
+filter_signature = (
+    search_term.strip().lower(),
+    tuple(sorted(selected_types)),
+    tuple(stat_mins[key] for key in STAT_KEYS),
+    total_range,
+)
+if st.session_state.get("filter_signature") != filter_signature:
+    st.session_state["page"] = 1
+    st.session_state["filter_signature"] = filter_signature
 
 filtered = data.copy()
 
@@ -138,8 +139,8 @@ elif len(selected_types) == 2:
 
 for key in STAT_KEYS:
     label = STAT_LABELS[key]
-    minimum, maximum = stat_ranges[key]
-    filtered = filtered[(filtered[label] >= minimum) & (filtered[label] <= maximum)]
+    minimum = stat_mins[key]
+    filtered = filtered[filtered[label] >= minimum]
 
 filtered = filtered[
     (filtered["合計"] >= total_range[0]) & (filtered["合計"] <= total_range[1])
@@ -161,7 +162,11 @@ else:
         filtered = filtered.sort_values("No.").head(page_size)
 
     total_pages = max((total_results - 1) // page_size + 1, 1)
-    page = st.number_input("ページ", min_value=1, max_value=total_pages, value=1)
+    # 最大ページを超えないようにガード（空ページ対策）
+    st.session_state["page"] = max(
+        1, min(st.session_state.get("page", 1), total_pages)
+    )
+    page = st.number_input("ページ", min_value=1, max_value=total_pages, key="page")
     start = (page - 1) * page_size
     end = start + page_size
     display = filtered.sort_values("No.").iloc[start:end]
