@@ -165,10 +165,14 @@ else:
         "合計",
     ]
     display_table = display[base_columns + heatmap_columns]
-    styled = display_table.style.background_gradient(
-        subset=heatmap_columns, cmap="YlOrRd"
-    )
-    st.dataframe(styled, use_container_width=True, hide_index=True)
+    try:
+        styled = display_table.style.background_gradient(
+            subset=heatmap_columns, cmap="YlOrRd"
+        )
+        st.dataframe(styled, use_container_width=True, hide_index=True)
+    except ImportError:
+        st.info("ヒートマップ表示には matplotlib が必要です。通常テーブルで表示します。")
+        st.dataframe(display_table, use_container_width=True, hide_index=True)
 
     with st.expander("画像付き一覧を表示"):
         image_columns = ["画像", "No.", "名前", "タイプ1", "タイプ2", "合計"]
