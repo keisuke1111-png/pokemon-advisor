@@ -82,27 +82,40 @@ with st.sidebar:
     st.subheader("タイプ")
     selected_types = st.multiselect("タイプ（最大2つ）", all_types)
 
-    st.subheader("種族値（以上 / 以下）")
+    st.subheader("種族値（Min / Max）")
     stat_ranges = {}
-    for key in STAT_KEYS:
-        label = STAT_LABELS[key]
-        min_value = int(data[label].min())
-        max_value = int(data[label].max())
-        stat_ranges[key] = st.slider(
-            f"{label}",
-            min_value=min_value,
-            max_value=max_value,
-            value=(min_value, max_value),
-        )
+    stat_pairs = [
+        ("H", "hp"),
+        ("A", "atk"),
+        ("B", "def"),
+        ("C", "spa"),
+        ("D", "spd"),
+        ("S", "spe"),
+    ]
+    for idx in range(0, len(stat_pairs), 2):
+        left_label, left_key = stat_pairs[idx]
+        right = stat_pairs[idx + 1] if idx + 1 < len(stat_pairs) else None
+        cols = st.columns(4 if right else 2)
+        with cols[0]:
+            left_min = st.number_input(f"{left_label} Min", min_value=0, max_value=255, value=0)
+        with cols[1]:
+            left_max = st.number_input(f"{left_label} Max", min_value=0, max_value=255, value=255)
+        stat_ranges[left_key] = (left_min, left_max)
+        if right:
+            right_label, right_key = right
+            with cols[2]:
+                right_min = st.number_input(f"{right_label} Min", min_value=0, max_value=255, value=0)
+            with cols[3]:
+                right_max = st.number_input(f"{right_label} Max", min_value=0, max_value=255, value=255)
+            stat_ranges[right_key] = (right_min, right_max)
 
-    total_min = int(data["合計"].min())
-    total_max = int(data["合計"].max())
-    total_range = st.slider(
-        "合計値(BST)",
-        min_value=total_min,
-        max_value=total_max,
-        value=(total_min, total_max),
-    )
+    st.subheader("合計値(BST)")
+    total_cols = st.columns(2)
+    with total_cols[0]:
+        total_min = st.number_input("BST Min", min_value=0, max_value=780, value=0)
+    with total_cols[1]:
+        total_max = st.number_input("BST Max", min_value=0, max_value=780, value=780)
+    total_range = (total_min, total_max)
 
     page_size = st.selectbox("表示件数", [100, 200, 500], index=0)
 
