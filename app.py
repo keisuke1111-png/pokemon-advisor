@@ -153,8 +153,8 @@ else:
     end = start + page_size
     display = filtered.sort_values("No.").iloc[start:end]
 
-    heatmap_columns = ["H", "A", "B", "C", "D", "S"]
-    base_columns = [
+    columns = [
+        "画像",
         "No.",
         "名前",
         "タイプ1",
@@ -162,25 +162,19 @@ else:
         "特性1",
         "特性2",
         "隠れ特性",
+        "H",
+        "A",
+        "B",
+        "C",
+        "D",
+        "S",
         "合計",
     ]
-    display_table = display[base_columns + heatmap_columns]
-    try:
-        styled = display_table.style.background_gradient(
-            subset=heatmap_columns, cmap="YlOrRd"
-        )
-        st.dataframe(styled, use_container_width=True, hide_index=True)
-    except ImportError:
-        st.info("ヒートマップ表示には matplotlib が必要です。通常テーブルで表示します。")
-        st.dataframe(display_table, use_container_width=True, hide_index=True)
-
-    with st.expander("画像付き一覧を表示"):
-        image_columns = ["画像", "No.", "名前", "タイプ1", "タイプ2", "合計"]
-        st.dataframe(
-            display[image_columns],
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "画像": st.column_config.ImageColumn("画像", width="small"),
-            },
-        )
+    st.dataframe(
+        display[columns],
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "画像": st.column_config.ImageColumn("画像", width="small"),
+        },
+    )
